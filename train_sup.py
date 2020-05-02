@@ -5,7 +5,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 from torch.optim import SGD
 
-import train_func as tf 
+import train_func as tf
 from loss_func import CompressibleLoss
 import utils
 
@@ -32,8 +32,8 @@ parser.add_argument('--gam1', type=float, default=10,
                     help='gamma1 for tuning empirical loss (default: 10)')
 parser.add_argument('--gam2', type=float, default=1.0,
                     help='gamma2 for tuning empirical loss (default: 1.0)')
-parser.add_argument('--eps', type=float, default=0.1,
-                    help='eps squared (default: 0.1)')
+parser.add_argument('--eps', type=float, default=0.5,
+                    help='eps squared (default: 0.5)')
 parser.add_argument('--lcr', type=float, default=0,
                     help='label corruption ratio (default: 0)')
 parser.add_argument('--lcs', type=int, default=10,
@@ -44,8 +44,6 @@ parser.add_argument('--transform', type=str, default='default',
                     help='transform applied to trainset (default: default')
 parser.add_argument('--savedir', type=str, default='./saved_models/',
                     help='base directory for saving PyTorch model. (default: ./saved_models/)')
-parser.add_argument('--logint', type=int, default=1, metavar='N',
-                    help='logging interval during training (default: 1')
 args = parser.parse_args()
 
 
@@ -73,25 +71,25 @@ def adjust_learning_rate(optimizer, epoch):
 
 
 ## Prepare for Training
-net = tf.load_architectures(args.arch, args.fd)
+net = tf.load_architectures(args.arch, args.fd).cuda()
 transforms = tf.load_transforms(args.transform)
 trainset = tf.load_trainset(args.data, transforms)
 trainset = tf.corrupt_labels(trainset, args.lcr, args.lcs)
 trainloader = DataLoader(trainset, batch_size=args.bs, shuffle=True, drop_last=True, num_workers=4)
 criterion = CompressibleLoss(gam1=args.gam1, gam2=args.gam2, eps=args.eps, 
-                num_classes=len(trainset.classes))
+                             num_classes=len(trainset.classes))
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
 
 
 ## Training
-for epoch in range(args.num_epochs):
+for epoch in range(args.epo):
     adjust_learning_rate(optimizer, epoch)
     for step, (batch_imgs, batch_lbls) in enumerate(trainloader):
-        loss, loss_empi, loss_theo = loss_func(net, batch_imgs.cuda(), batch_lbls.int())
+        loss, loss_empi, loss_theo = criterion(net, batch_imgs, batch_lbls)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
         utils.save_state(model_dir, epoch, step, *loss_empi, *loss_theo)
-    torch.save(net.state_dict(), os.path.join(model_dir, 'model-epoch{}.pt'.format(epoch)))
+    utils.save_ckpt(model_dir, net, epoch)
 print("training complete.")

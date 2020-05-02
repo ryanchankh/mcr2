@@ -2,23 +2,7 @@ import os
 import logging
 import json
 import numpy as np
-
-
-def one_hot(targets, num_classes):
-    """One-hot-ify labels.
-
-    Args: 
-        targets (np.ndarray): should have shape (num_samples)
-        num_classes (int): number of classes for the labels
-
-    Return:
-        np.ndarray with shape (num_samples, num_classes)
-
-    """
-    if num_classes is None:
-        num_classes = targets.max() + 1
-    res = np.eye(num_classes)[np.array(targets).reshape(-1)]
-    return res.reshape(list(targets.shape)+[num_classes]).astype(np.float32)
+import torch
 
 
 def sort_dataset(data, labels, num_classes=10, stack=False):
@@ -37,13 +21,15 @@ def init_pipeline(model_dir):
     """Initialize folder and csv logger. """
     # project folder
     os.makedirs(model_dir)
-    print("project folder: {}".format(model_dir))
+    os.makedirs(os.path.join(model_dir, 'checkpoints'))
+    os.makedirs(os.path.join(model_dir, 'figures'))
+    print("project dir: {}".format(model_dir))
 
     # csv
-    CSV_FILENAME = os.path.join(model_dir, 'losses.csv')
+    csv_path = os.path.join(model_dir, 'losses.csv')
     headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
         "discrimn_loss_t",  "compress_loss_t"]
-    with open(path, 'a') as f:
+    with open(csv_path, 'a') as f:
         f.write(','.join(map(str, headers)))
 
 
@@ -61,8 +47,13 @@ def save_params(model_dir, params):
         json.dump(params, f, indent=2, sort_keys=True)
 
 
-def save_state(model_dir, entries):
-    csv_path = os.phat.join(model_dir, 'losses.csv')
+def save_state(model_dir, *entries):
+    csv_path = os.path.join(model_dir, 'losses.csv')
     assert os.path.exists(csv_path), 'CSV file is missing in project directory.'
-    with open(path,'a') as f:
+    with open(csv_path, 'a') as f:
         f.write('\n'+','.join(map(str, entries)))
+
+
+def save_ckpt(model_dir, net, epoch):
+    torch.save(net.state_dict(), os.path.join(model_dir, 'checkpoints', 
+        'model-epoch{}.pt'.format(epoch)))

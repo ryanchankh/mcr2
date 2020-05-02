@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 
+import train_func as tf
 import utils
 
 
@@ -55,8 +56,8 @@ class CompressibleLoss(torch.nn.Module):
         return compress_loss
 
     def forward(self, net, X, Y):
-        W = net(X).T
-        Pi = utils.label_to_membership(Y, self.num_classes)
+        W = net(X.cuda()).T
+        Pi = tf.label_to_membership(Y.numpy(), self.num_classes)
         Pi = torch.tensor(Pi, dtype=torch.float32).cuda()
 
         discrimn_loss_empi = self.compute_discrimn_loss_empirical(W)
@@ -66,5 +67,5 @@ class CompressibleLoss(torch.nn.Module):
  
         total_loss_empi = self.gam2 * -discrimn_loss_empi + compress_loss_empi
         return (total_loss_empi,
-                (discrimn_loss_empi.item(), compress_loss_empi.item(),
-                 discrimn_loss_theo.item(), compress_loss_theo.item())
+                [discrimn_loss_empi.item(), compress_loss_empi.item()],
+                [discrimn_loss_theo.item(), compress_loss_theo.item()])

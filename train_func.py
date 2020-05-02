@@ -39,8 +39,8 @@ def load_trainset(name, transform=None):
         trainset = torchvision.datasets.CIFAR100(root='./data/cifar100/', train=True,
                                                  download=True, transform=transform)
     elif _name == "mnist":
-        trainset = torchvision.datasets.MNIST(root="/Users/ryanchankh/Datasets/mnist/", 
-                                              train=True, download=True, transform=transform)
+        trainset = torchvision.datasets.MNIST(root="./data/mnist/", train=True, 
+                                              download=True, transform=transform)
     else:
         raise NameError("{} not found in trainset loader".format(name))
     return trainset
@@ -54,14 +54,14 @@ def load_transforms(name):
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor()])
     elif _name == "simclr":
-        train_transform = transforms.Compose([
+        transform = transforms.Compose([
             transforms.RandomResizedCrop(32),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
             transforms.ToTensor()])
     elif _name == "random":
-         train_transform = transforms.Compose([
+         transform = transforms.Compose([
             transforms.RandomChoice([
                 transforms.ColorJitter(brightness=(0.5, 1)),
                 transforms.ColorJitter(contrast=(0, 1)),
@@ -78,7 +78,7 @@ def load_transforms(name):
             transforms.ToTensor()])
     else:
         raise NameError("{} not found in transform loader".format(name))
-    return transforms
+    return transform
 
 
 def load_dataloader(name, *args):
@@ -137,3 +137,6 @@ def membership_to_label(membership):
     for i in range(num_samples):
         labels[i] = np.argmax(membership[:, i, i])
     return labels
+
+def one_hot(x, K):
+    return np.array(x[:, None] == np.arange(K)[None, :], dtype=int)
