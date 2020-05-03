@@ -107,7 +107,7 @@ def get_features(net, trainloader):
     '''extract all features out into one single batch. '''
     features = []
     labels = []
-    train_bar = tqdm(trainloader)
+    train_bar = tqdm(trainloader, desc="extracting all features from dataset")
     for step, (batch_imgs, batch_lbls) in enumerate(train_bar):
         batch_features = net(batch_imgs.cuda())
         features.append(batch_features.cpu().detach())
