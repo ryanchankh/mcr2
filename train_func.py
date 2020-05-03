@@ -62,7 +62,7 @@ def load_transforms(name):
             transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
             transforms.ToTensor()])
-    elif _name == "random":
+    elif _name == "augment":
          transform = transforms.Compose([
             transforms.RandomChoice([
                 transforms.ColorJitter(brightness=(0.5, 1)),
