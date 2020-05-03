@@ -32,16 +32,16 @@ def load_architectures(name, dim):
     return net
 
 
-def load_trainset(name, transform=None):
+def load_trainset(name, transform=None, train=True):
     _name = name.lower()
     if _name == "cifar10":
-        trainset = torchvision.datasets.CIFAR10(root='./data/cifar10/', train=True,
+        trainset = torchvision.datasets.CIFAR10(root='./data/cifar10/', train=train,
                                                 download=True, transform=transform)
     elif _name == "cifar10":
-        trainset = torchvision.datasets.CIFAR100(root='./data/cifar100/', train=True,
+        trainset = torchvision.datasets.CIFAR100(root='./data/cifar100/', train=train,
                                                  download=True, transform=transform)
     elif _name == "mnist":
-        trainset = torchvision.datasets.MNIST(root="./data/mnist/", train=True, 
+        trainset = torchvision.datasets.MNIST(root="./data/mnist/", train=train, 
                                               download=True, transform=transform)
     else:
         raise NameError("{} not found in trainset loader".format(name))

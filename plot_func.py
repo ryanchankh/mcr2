@@ -144,7 +144,7 @@ def plot_hist(args, features_per_class, epoch):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Loss Plot')
+    parser = argparse.ArgumentParser(description='Ploting')
     parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
     parser.add_argument('--loss', help='plot losses from training', action='store_true')
     parser.add_argument('--hist', help='plot histogram of cosine similarity of features', action='store_true')
