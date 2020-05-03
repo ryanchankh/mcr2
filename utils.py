@@ -34,7 +34,6 @@ def init_pipeline(model_dir):
 
 
 def dataset_per_class(images, labels, num_classes):
-    num_classes = 10
     new_images = [[] for _ in range(num_classes)]
     for i, lbl in enumerate(labels):
         new_images[lbl].append(images[i])
@@ -45,6 +44,13 @@ def save_params(model_dir, params):
     path = os.path.join(model_dir, 'params.json')
     with open(path, 'w') as f:
         json.dump(params, f, indent=2, sort_keys=True)
+
+
+def load_params(model_dir):
+    _path = os.path.join(model_dir, "params.json")
+    with open(_path, 'r') as f:
+        _dict = json.load(f)
+    return _dict
 
 
 def save_state(model_dir, *entries):

@@ -1,11 +1,14 @@
-import pandas as pd
-import os
 import argparse
+import os
+
+import pandas as pd
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from torch.utils.data import DataLoader
 
-
+import utils
+import train_func as tf
 
 
 def plot_loss(args):
@@ -24,7 +27,6 @@ def plot_loss(args):
     dis_loss_t = data['discrimn_loss_t'].ravel()
     com_loss_t = data['compress_loss_t'].ravel()
     obj_loss_t = dis_loss_t - com_loss_t
-    print(com_loss_t)
 
     ## Theoretical Loss
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
@@ -68,8 +70,52 @@ def plot_loss(args):
     plt.close()
     print("Plot saved to: {}".format(file_name))
 
+
 def plot_pca(args):
-    None
+    ## create save folder
+    pca_dir = os.path.join(args.model_dir, 'figures', 'pca')
+    if not os.path.exists(pca_dir):
+        os.makedirs(pca_dir)
+
+    ## load data and model
+    params = utils.load_params(args.model_dir)
+    net = tf.load_architectures(params['arch'], params['fd']).cuda()
+    net, epoch = tf.load_checkpoint(args.model_dir, net, args.epoch)
+    transforms = tf.load_transforms('test')
+    trainset = tf.load_trainset(params['data'], transforms)
+    if 'lcr' in params.keys(): # supervised corruption case
+        trainset = tf.corrupt_labels(trainset, params['lcr'], params['lcs'])
+    trainloader = DataLoader(trainset, batch_size=200, shuffle=True, num_workers=4)
+
+    ## perform PCA on features
+    features, labels = tf.get_features(net, trainloader)
+    features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
+                            num_classes=len(trainset.classes), stack=False)
+    pca = PCA(n_components=args.comp).fit(features.numpy())
+    sig_vals = [pca.singular_values_]
+    for c in range(len(trainset.classes)): 
+        pca = PCA(n_components=args.comp).fit(features_sort[c])
+        sig_vals.append((pca.singular_values_))
+
+    ## plot features
+    fig, ax = plt.subplots(1, 1, figsize=(7, 5), dpi=250)
+    x_min = np.min([len(sig_val) for sig_val in sig_vals])
+    ax.plot(np.arange(x_min), sig_vals[0][:x_min], marker='x', markersize=5, color='black', label=f'all', alpha=0.6)
+    ax.set_xticks(np.arange(x_min))
+    ax.set_yticks(np.linspace(0, np.int32(np.max(sig_vals[0])), 10))
+    for c, sig_val in enumerate(sig_vals[1:]):
+        ax.plot(np.arange(x_min), sig_val[:x_min], marker='.', markersize=5, label=f'class {c}', alpha=0.6)
+    ax.legend()
+    ax.set_xlabel("components")
+    ax.set_ylabel("sigular values")
+    ax.set_title(f"PCA on features (Epoch: {epoch})")
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    fig.tight_layout()
+    file_name = os.path.join(pca_dir, f"pca_epoch{epoch}.png")
+    fig.savefig(file_name)
+    plt.close()
+    print("Plot saved to: {}".format(file_name))
 
 def plot_hist(args):
     None
@@ -81,8 +127,17 @@ if __name__ == "__main__":
     parser.add_argument('--loss', help='plot losses from training', action='store_true')
     parser.add_argument('--hist', help='plot histogram of cosine similarity of features', action='store_true')
     parser.add_argument('--pca', help='plot PCA singular values of feautres', action='store_true')
+    parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
+
+    ## PCA
+    parser.add_argument('--comp', type=int, default=30,
+                        help='number of components for PCA (default: 30)')
+
     args = parser.parse_args()
     
     if args.loss:
-        
         plot_loss(args)
+    if args.pca:
+        plot_pca(args)
+    if args.hist:
+        plot_hist(args)

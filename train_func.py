@@ -1,6 +1,8 @@
+import os
 from tqdm import tqdm
 
 import numpy as np
+import torch
 import torchvision
 import torchvision.transforms as transforms
 
@@ -76,6 +78,8 @@ def load_transforms(name):
                 transforms.RandomAffine(0, scale=(0.8, 1.1)),
                 transforms.RandomAffine(0, shear=(-20, 20))]), 
             transforms.ToTensor()])
+    elif _name == "test":
+        transform = transforms.ToTensor()
     else:
         raise NameError("{} not found in transform loader".format(name))
     return transform
@@ -84,6 +88,20 @@ def load_transforms(name):
 def load_dataloader(name, *args):
     _name = name.lower()
     print(args)
+
+
+def load_checkpoint(model_dir, net, epoch=None):
+    if epoch is None: # get last epoch
+        ckpt_dir = os.path.join(model_dir, 'checkpoints')
+        epochs = [int(e[11:-3]) for e in os.listdir(ckpt_dir) if e[-3:] == ".pt"]
+        epoch = np.sort(epochs)[-1]
+    ckpt_path = os.path.join(model_dir, 'checkpoints', 'model-epoch{}.pt'.format(epoch))
+    print('Loading checkpoint: {}'.format(ckpt_path))
+    state_dict = torch.load(ckpt_path, map_location=lambda storage, loc: storage)
+    net.load_state_dict(state_dict)
+    del state_dict
+    return net, epoch
+
 
 def get_features(net, trainloader):
     '''extract all features out into one single batch. '''
