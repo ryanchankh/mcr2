@@ -12,7 +12,36 @@ import utils
 import train_func as tf
 
 
-def svm(args):
+def svm(args, train_features, train_labels, test_features, test_labels):
+    print("Fitting LinearSVM model with {} samples".format(train_features.shape[0]))
+    svm = LinearSVC(verbose=0)
+    svm.fit(train_features, train_labels)
+    acc = svm.score(test_features, test_labels)
+    print("==> Test Accuracy - SVM: {}".format(acc))
+
+
+def knn(args, train_features, train_labels, test_features, test_labels):
+    ## Compute top k-nearest neighbors using cosine similarity
+    sim_mat = train_features @ test_features.T
+    topk = sim_mat.topk(k=args.k, dim=0)
+    topk_pred = train_labels[topk.indices]
+    test_pred = topk_pred.mode(0).values.detach()
+    acc = utils.compute_accuracy(test_pred, test_labels)
+    print("==> Test Accuracy - kNN: {}".format(acc))
+
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Evaluation')
+    parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
+    parser.add_argument('--svm', help='evaluate using SVM', action='store_true')
+    parser.add_argument('--knn', help='evaluate using kNN measuring cosine similarity', action='store_true')
+    parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
+
+    parser.add_argument('--k', type=int, default=5, help='top k components for kNN')
+    args = parser.parse_args()
+
+    ## load model, train data, and test data
     params = utils.load_params(args.model_dir)
     net = tf.load_architectures(params['arch'], params['fd']).cuda()
     net, epoch = tf.load_checkpoint(args.model_dir, net, args.epoch)
@@ -29,19 +58,7 @@ def svm(args):
     testloader = DataLoader(testset, batch_size=200, shuffle=True, num_workers=4)
     test_features, test_labels = tf.get_features(net, testloader)
 
-    print("Fitting LinearSVM model with {} samples".format(train_features.shape[0]))
-    svm = LinearSVC(verbose=1)
-    svm.fit(train_features, train_labels)
-    acc = svm.score(test_features, test_labels)
-    print("==> Test Accuracy - SVM: {}".format(acc))
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Evaluation')
-    parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
-    parser.add_argument('--svm', help='evaluate using SVM', action='store_true')
-    parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
-    args = parser.parse_args()
-
     if args.svm:
-        svm(args)
+        svm(args, train_features, train_labels, test_features, test_labels)
+    if args.knn:
+        knn(args, train_features, train_labels, test_features, test_labels)

@@ -4,6 +4,9 @@ import json
 import numpy as np
 import torch
 
+from sklearn.metrics.cluster import supervised
+from scipy.optimize import linear_sum_assignment
+
 
 def sort_dataset(data, labels, num_classes=10, stack=False):
     sorted_data = [[] for _ in range(num_classes)]
@@ -63,3 +66,16 @@ def save_state(model_dir, *entries):
 def save_ckpt(model_dir, net, epoch):
     torch.save(net.state_dict(), os.path.join(model_dir, 'checkpoints', 
         'model-epoch{}.pt'.format(epoch)))
+
+
+def compute_accuracy(y_pred, y_true):
+    assert y_pred.shape == y_true.shape
+    return 1 - np.count_nonzero(y_pred - y_true) / y_true.size()[0]
+
+
+def clustering_accuracy(labels_true, labels_pred):
+    labels_true, labels_pred = supervised.check_clusterings(labels_true, labels_pred)
+    # value = supervised.contingency_matrix(labels_true, labels_pred, sparse=False)
+    value = supervised.contingency_matrix(labels_true, labels_pred)
+    [r, c] = linear_sum_assignment(-value)
+    return value[r, c].sum() / len(labels_true)
