@@ -90,6 +90,6 @@ for epoch in range(args.epo):
         loss.backward()
         optimizer.step()
 
-        utils.save_state(model_dir, epoch, step, *loss_empi, *loss_theo)
+        utils.save_state(model_dir, epoch, step, loss.item(), *loss_empi, *loss_theo)
     utils.save_ckpt(model_dir, net, epoch)
 print("training complete.")

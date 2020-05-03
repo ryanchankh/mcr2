@@ -9,16 +9,22 @@ import matplotlib.pyplot as plt
 
 
 def plot_loss(args):
+
+    ## create saving directory
+    loss_dir = os.path.join(args.model_dir, 'figures', 'loss')
+    if not os.path.exists(loss_dir):
+        os.makedirs(loss_dir)
     file_dir = os.path.join(args.model_dir, 'losses.csv')
     data = pd.read_csv(file_dir)
-    # epoch,step,loss,discrimn_loss_e,compress_loss_e,discrimn_loss_t,compress_loss_t
 
+    ## extract loss from csv
+    obj_loss_e = -data['loss'].ravel()
     dis_loss_e = data['discrimn_loss_e'].ravel()
     com_loss_e = data['compress_loss_e'].ravel()
-    obj_loss_e = -data['loss'].ravel()
     dis_loss_t = data['discrimn_loss_t'].ravel()
     com_loss_t = data['compress_loss_t'].ravel()
     obj_loss_t = dis_loss_t - com_loss_t
+    print(com_loss_t)
 
     ## Theoretical Loss
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
@@ -36,8 +42,8 @@ def plot_loss(args):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     plt.tight_layout()
-    file_name = os.path.join(args.model_dir, 'figures', 'loss_theoretical')
-    plt.savefig(file_name + ".png", dpi=400)
+    file_name = os.path.join(loss_dir, 'loss_theoretical.png')
+    plt.savefig(file_name, dpi=400)
     plt.close()
     print("Plot saved to: {}".format(file_name))
 
@@ -57,10 +63,9 @@ def plot_loss(args):
     ax.spines['right'].set_visible(False)
     ax.set_title("Empirical Loss")
     plt.tight_layout()
-    file_name = os.path.join(args.model_dir, 'figures', 'loss_empirical')
-    plt.savefig(file_name + ".png", dpi=400)
+    file_name = os.path.join(loss_dir, 'loss_empirical.png')
+    plt.savefig(file_name, dpi=400)
     plt.close()
-
     print("Plot saved to: {}".format(file_name))
 
 def plot_pca(args):
@@ -79,4 +84,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if args.loss:
+        
         plot_loss(args)
