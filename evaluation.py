@@ -43,19 +43,19 @@ if __name__ == '__main__':
 
     ## load model, train data, and test data
     params = utils.load_params(args.model_dir)
-    net = tf.load_architectures(params['arch'], params['fd']).cuda()
-    net, epoch = tf.load_checkpoint(args.model_dir, net, args.epoch)
+    net, epoch = tf.load_checkpoint(args.model_dir, args.epoch)
+    net = net.cuda().eval()
     
-    train_transforms = tf.load_transforms('default')
+    train_transforms = tf.load_transforms('test')
     trainset = tf.load_trainset(params['data'], train_transforms, train=True)
     if 'lcr' in params.keys(): # supervised corruption case
         trainset = tf.corrupt_labels(trainset, params['lcr'], params['lcs'])
-    trainloader = DataLoader(trainset, batch_size=200, shuffle=True, num_workers=4)
+    trainloader = DataLoader(trainset, batch_size=500, shuffle=False, num_workers=4)
     train_features, train_labels = tf.get_features(net, trainloader)
 
     test_transforms = tf.load_transforms('test')
     testset = tf.load_trainset(params['data'], test_transforms, train=False)
-    testloader = DataLoader(testset, batch_size=200, shuffle=True, num_workers=4)
+    testloader = DataLoader(testset, batch_size=200, shuffle=False, num_workers=4)
     test_features, test_labels = tf.get_features(net, testloader)
 
     if args.svm:

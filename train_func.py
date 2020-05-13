@@ -5,6 +5,8 @@ import numpy as np
 import torch
 import torchvision
 import torchvision.transforms as transforms
+import utils
+
 
 def load_architectures(name, dim):
     _name = name.lower()
@@ -90,19 +92,21 @@ def load_dataloader(name, *args):
     print(args)
 
 
-def load_checkpoint(model_dir, net, epoch=None):
+def load_checkpoint(model_dir, epoch=None):
     if epoch is None: # get last epoch
         ckpt_dir = os.path.join(model_dir, 'checkpoints')
         epochs = [int(e[11:-3]) for e in os.listdir(ckpt_dir) if e[-3:] == ".pt"]
         epoch = np.sort(epochs)[-1]
     ckpt_path = os.path.join(model_dir, 'checkpoints', 'model-epoch{}.pt'.format(epoch))
+    params = utils.load_params(model_dir)
     print('Loading checkpoint: {}'.format(ckpt_path))
     state_dict = torch.load(ckpt_path, map_location=lambda storage, loc: storage)
+    net = load_architectures(params['arch'], params['fd'])
     net.load_state_dict(state_dict)
     del state_dict
     return net, epoch
 
-
+    
 def get_features(net, trainloader):
     '''extract all features out into one single batch. '''
     features = []

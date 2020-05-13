@@ -160,7 +160,8 @@ if __name__ == "__main__":
         ## load data and model
         params = utils.load_params(args.model_dir)
         net = tf.load_architectures(params['arch'], params['fd']).cuda()
-        net, epoch = tf.load_checkpoint(args.model_dir, net, args.epoch)
+        net, epoch = tf.load_checkpoint(args.model_dir, args.epoch)
+        net = net.cuda().eval()
         transforms = tf.load_transforms('test')
         trainset = tf.load_trainset(params['data'], transforms)
         if 'lcr' in params.keys(): # supervised corruption case
