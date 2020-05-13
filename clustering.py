@@ -632,19 +632,20 @@ if __name__ == '__main__':
                         help='gamma paramter for subspace clustering (default: 100)')
     parser.add_argument('--tau', type=float, default=1.0,
                         help='tau paramter for subspace clustering (default: 1.0)')
+    parser.add_argument('--tail', type=str, default='',
+                    help='extra information to add to file name')
     args = parser.parse_args()
 
 
-    path = os.path.join(f"./plabels", f'n{args.n}_gam{args.gam}_tau{args.tau}.npy')
+    path = os.path.join(f"./plabels", f'n{args.n}_gam{args.gam}_tau{args.tau}{args.tail}.npy')
     print("plabels path:", path)
     params = utils.load_params(args.model_dir)
-    net, epoch = tf.load_checkpoint(args.model_dir, args.epoch)
-    net = net.cuda().eval()
-    
+    net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
     train_transforms = tf.load_transforms('test')
     trainset = tf.load_trainset(params['data'], train_transforms, train=True)
     trainloader = DataLoader(trainset, batch_size=500, shuffle=False, num_workers=4)
     features, labels = tf.get_features(net, trainloader)
+
     clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, affinity='symmetrize', 
                     algorithm='spams', active_support=True, gamma=args.gam, tau=args.tau)
     clustermd.fit(features)
