@@ -76,8 +76,7 @@ transforms = tf.load_transforms(args.transform)
 trainset = tf.load_trainset(args.data, transforms)
 trainset = tf.corrupt_labels(trainset, args.lcr, args.lcs)
 trainloader = DataLoader(trainset, batch_size=args.bs, shuffle=True, drop_last=True, num_workers=4)
-criterion = CompressibleLoss(gam1=args.gam1, gam2=args.gam2, eps=args.eps, 
-                             num_classes=len(trainset.classes))
+criterion = CompressibleLoss(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
 
 
@@ -85,7 +84,9 @@ optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=ar
 for epoch in range(args.epo):
     adjust_learning_rate(optimizer, epoch)
     for step, (batch_imgs, batch_lbls) in enumerate(trainloader):
-        loss, loss_empi, loss_theo = criterion(net, batch_imgs, batch_lbls)
+        features = net(batch_imgs.cuda())
+        loss, loss_empi, loss_theo = criterion(features, batch_lbls, 
+                                               num_classes=len(trainset.classes))
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
