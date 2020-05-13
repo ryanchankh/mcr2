@@ -46,7 +46,6 @@ parser.add_argument('--savedir', type=str, default='./saved_models/',
                     help='base directory for saving PyTorch model. (default: ./saved_models/)')
 args = parser.parse_args()
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "0,1"
 
 ## Pipelines Setup
 model_dir = os.path.join(args.savedir,
@@ -72,7 +71,7 @@ def adjust_learning_rate(optimizer, epoch):
 
 
 ## Prepare for Training
-net = tf.load_architectures(args.arch, args.fd).cuda()
+net = tf.load_architectures(args.arch, args.fd)
 transforms = tf.load_transforms(args.transform)
 trainset = tf.load_trainset(args.data)
 trainloader = AugmentLoader(trainset,
