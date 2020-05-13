@@ -6,12 +6,11 @@ import utils
 
 
 class CompressibleLoss(torch.nn.Module):
-    def __init__(self, gam1=1.0, gam2=1.0, eps=0.01, num_classes=None):
+    def __init__(self, gam1=1.0, gam2=1.0, eps=0.01):
         super(CompressibleLoss, self).__init__()
         self.gam1 = gam1
         self.gam2 = gam2
         self.eps = eps
-        self.num_classes = num_classes
 
     def compute_discrimn_loss_empirical(self, W):
         """Empirical Discriminative Loss."""
@@ -55,9 +54,11 @@ class CompressibleLoss(torch.nn.Module):
             compress_loss += trPi / (2 * m) * log_det
         return compress_loss
 
-    def forward(self, net, X, Y):
-        W = net(X.cuda()).T
-        Pi = tf.label_to_membership(Y.numpy(), self.num_classes)
+    def forward(self, X, Y, num_classes=None):
+        if num_classes is None:
+            num_classes = Y.max() + 1
+        W = X.T
+        Pi = tf.label_to_membership(Y.numpy(), num_classes)
         Pi = torch.tensor(Pi, dtype=torch.float32).cuda()
 
         discrimn_loss_empi = self.compute_discrimn_loss_empirical(W)
