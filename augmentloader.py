@@ -64,10 +64,8 @@ class AugmentLoader:
             assert self.size // num_img * num_img == self.size
             return _Iter(self, sampler, num_img, self.num_aug)
 
-    def update_labels(self, targets, num_aug):
+    def update_labels(self, targets):
         self.dataset.targets = targets
-        self.num_aug = num_aug
-        print("Updated Labels. ")
 
     def apply_augments(self, sample):
         if self.num_aug is None:
