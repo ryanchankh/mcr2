@@ -37,7 +37,7 @@ def load_trainset(name, transform=None, train=True):
     if _name == "cifar10":
         trainset = torchvision.datasets.CIFAR10(root='./data/cifar10/', train=train,
                                                 download=True, transform=transform)
-    elif _name == "cifar10":
+    elif _name == "cifar100":
         trainset = torchvision.datasets.CIFAR100(root='./data/cifar100/', train=train,
                                                  download=True, transform=transform)
     elif _name == "mnist":
@@ -127,6 +127,14 @@ def corrupt_labels(trainset, ratio, seed):
         labels_[idx] = np.random.choice(np.delete(np.arange(num_classes), labels[idx]))
     trainset.targets = labels_
     return trainset
+
+
+def update_labels_by_clustering(features, true_labels=None):
+    clustermd = ElasticNetSubspaceClustering(n_clusters=10,affinity='symmetrize',algorithm='spams',active_support=True,gamma=120,tau=0.9).fit(features)
+    clus_lbls = clustermd.labels_
+    clus_acc = clustering_accuracy(true_labels, clus_lbls)
+    print("clustering accuracy:", clus_acc)
+    return torch.tensor(clus_lbls)
 
 
 def label_to_membership(targets, num_classes=None):
