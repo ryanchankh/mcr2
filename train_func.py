@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 import numpy as np
 import torch
+import torch.nn
 import torchvision
 import torchvision.transforms as transforms
 import utils
@@ -31,7 +32,7 @@ def load_architectures(name, dim):
         net = ResNet18Mod(dim)
     else:
         raise NameError("{} not found in archiectures.".format(name))
-    return net
+    return torch.nn.DataParallel(net).cuda()
 
 
 def load_trainset(name, transform=None, train=True):
@@ -85,11 +86,6 @@ def load_transforms(name):
     else:
         raise NameError("{} not found in transform loader".format(name))
     return transform
-
-
-def load_dataloader(name, *args):
-    _name = name.lower()
-    print(args)
 
 
 def load_checkpoint(model_dir, epoch=None):
