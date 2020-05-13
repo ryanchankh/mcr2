@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     ## load model, train data, and test data
     params = utils.load_params(args.model_dir)
-    net, epoch = tf.load_checkpoint(args.model_dir, args.epoch)
+    net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
     net = net.cuda().eval()
     
     train_transforms = tf.load_transforms('test')
