@@ -32,6 +32,7 @@ def load_architectures(name, dim):
         net = ResNet18Mod(dim)
     else:
         raise NameError("{} not found in archiectures.".format(name))
+    # return net.cuda()
     return torch.nn.DataParallel(net).cuda()
 
 
@@ -54,11 +55,6 @@ def load_trainset(name, transform=None, train=True):
 def load_transforms(name):
     _name = name.lower()
     if _name == "default":
-        transform = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor()])
-    elif _name == "simclr":
         transform = transforms.Compose([
             transforms.RandomResizedCrop(32),
             transforms.RandomHorizontalFlip(p=0.5),
@@ -88,7 +84,7 @@ def load_transforms(name):
     return transform
 
 
-def load_checkpoint(model_dir, epoch=None):
+def load_checkpoint(model_dir, epoch=None, eval_=False):
     if epoch is None: # get last epoch
         ckpt_dir = os.path.join(model_dir, 'checkpoints')
         epochs = [int(e[11:-3]) for e in os.listdir(ckpt_dir) if e[-3:] == ".pt"]
@@ -100,6 +96,8 @@ def load_checkpoint(model_dir, epoch=None):
     net = load_architectures(params['arch'], params['fd'])
     net.load_state_dict(state_dict)
     del state_dict
+    if eval_:
+        net = net.eval()
     return net, epoch
 
     
