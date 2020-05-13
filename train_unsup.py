@@ -46,6 +46,7 @@ parser.add_argument('--savedir', type=str, default='./saved_models/',
                     help='base directory for saving PyTorch model. (default: ./saved_models/)')
 args = parser.parse_args()
 
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1"
 
 ## Pipelines Setup
 model_dir = os.path.join(args.savedir,
