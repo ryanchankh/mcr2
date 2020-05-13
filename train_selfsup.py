@@ -6,7 +6,7 @@ from torch.optim import SGD
 
 import train_func as tf
 from augmentloader import AugmentLoader
-from loss_func import CompressibleLoss
+from loss import CompressibleLoss
 from psd import pairwise_steepest_descent
 import utils
 

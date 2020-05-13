@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from torch.optim import SGD
 
 import train_func as tf
-from loss_func import CompressibleLoss
+from loss import CompressibleLoss
 import utils
 
 
