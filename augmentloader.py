@@ -61,6 +61,7 @@ class AugmentLoader:
             sampler = RandomSampler(self.dataset, self.shuffle)
             num_img = self.batch_size // (self.num_aug+1)
             assert self.batch_size // (self.num_aug+1) * (self.num_aug+1) == self.batch_size
+            assert self.size // num_img * num_img == self.size
             return _Iter(self, sampler, num_img, self.num_aug)
 
     def update_labels(self, targets, num_aug):
