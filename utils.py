@@ -26,6 +26,7 @@ def init_pipeline(model_dir):
     os.makedirs(model_dir)
     os.makedirs(os.path.join(model_dir, 'checkpoints'))
     os.makedirs(os.path.join(model_dir, 'figures'))
+    os.makedirs(os.path.join(model_dir, 'plabels'))
     print("project dir: {}".format(model_dir))
 
     # csv
@@ -66,6 +67,11 @@ def save_state(model_dir, *entries):
 def save_ckpt(model_dir, net, epoch):
     torch.save(net.state_dict(), os.path.join(model_dir, 'checkpoints', 
         'model-epoch{}.pt'.format(epoch)))
+
+
+def save_labels(model_dir, labels, epoch):
+    path = os.path.join(model_dir, 'plabels', f'epoch{epoch}.npy')
+    np.save(path, labels)
 
 
 def compute_accuracy(y_pred, y_true):
