@@ -42,8 +42,8 @@ parser.add_argument('--tail', type=str, default='',
                     help='extra information to add to folder name')
 parser.add_argument('--transform', type=str, default='default',
                     help='transform applied to trainset (default: default')
-parser.add_argument('--sampler', type=str, default='random',
-                    help='sampler used in augmentloader (default: random')
+parser.add_argument('--sampler', type=str, default='balance',
+                    help='sampler used in augmentloader (default: balance')
 parser.add_argument('--pretrain_dir', type=str, default=None,
                     help='load pretrained checkpoint for assigning labels')
 parser.add_argument('--pretrain_epo', type=int, default=None,
@@ -66,14 +66,14 @@ utils.save_params(model_dir, vars(args))
 def lr_schedule(epoch, optimizer):
     """decrease the learning rate."""
     lr = args.lr
-    # if epoch > 10:
-    #     lr = args.lr * 0.1
+    if epoch > 10:
+        lr = args.lr * 0.1
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
 def plabels_schedule(epoch, net, data, trainloader, n_clusters=10, gamma=100):
     """update labels using clutsering."""
-    if epoch != 0 and epoch % 5 == 0: #test
+    if epoch % 5 == 0: #test
         plabels, accuracy = tf.get_plabels(net, data, n_clusters=n_clusters, gamma=100)
         trainloader.update_labels(plabels)
         utils.save_labels(model_dir, plabels, epoch)
@@ -98,14 +98,11 @@ optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=ar
 
 ## Training
 for epoch in range(args.epo):
-    lr_schedule(epoch, optimizer)
+    # lr_schedule(epoch, optimizer)
     plabels_schedule(epoch, net, args.data, trainloader, n_clusters=args.nc)
     for step, (batch_imgs, batch_lbls, batch_idx) in enumerate(trainloader):
         batch_features = net(batch_imgs.cuda())
-        if epoch > 5:
-            loss, loss_empi, loss_theo = criterion(batch_features, batch_lbls)
-        else:
-            loss, loss_empi, loss_theo = criterion(batch_features, batch_idx)
+        loss, loss_empi, loss_theo = criterion(batch_features, batch_lbls)
 
         optimizer.zero_grad()
         loss.backward()
