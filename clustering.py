@@ -5,6 +5,7 @@ import numpy as np
 import spams
 import time
 import os
+from tqdm import tqdm
 
 from scipy import sparse
 from sklearn import cluster
@@ -274,11 +275,9 @@ def elastic_net_subspace_clustering(X, gamma=50.0, gamma_nz=True, tau=1.0, algor
     vals = np.zeros(n_samples * n_nonzero)
     curr_pos = 0
  
-    for i in range(n_samples):
+    for i in tqdm(range(n_samples), desc='clustering'):
     #    if i % 1000 == 999:
     #        print('SSC: sparse coding finished {i} in {n_samples}'.format(i=i, n_samples=n_samples))
-        if i % 10000 == 0:
-            print(f'{i}/{n_samples}')
         y = X[i, :].copy().reshape(1, -1)
         X[i, :] = 0
         
@@ -646,8 +645,8 @@ if __name__ == '__main__':
     trainloader = DataLoader(trainset, batch_size=500, shuffle=False, num_workers=4)
     features, labels = tf.get_features(net, trainloader)
 
-    clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, affinity='symmetrize', 
-                    algorithm='spams', active_support=True, gamma=args.gam, tau=args.tau)
+    clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, algorithm='spams', 
+                    gamma=args.gam, tau=args.tau)
     clustermd.fit(features)
     plabels = clustermd.labels_
     clus_acc = clustering_accuracy(labels, plabels)
