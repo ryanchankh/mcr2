@@ -7,7 +7,6 @@ from torch.optim import SGD
 import train_func as tf
 from augmentloader import AugmentLoader
 from loss import CompressibleLoss
-from psd import pairwise_steepest_descent
 import utils
 
 
@@ -25,6 +24,8 @@ parser.add_argument('--bs', type=int, default=1000,
                     help='input batch size for training (default: 1000)')
 parser.add_argument('--aug', type=int, default=49,
                     help='number of augmentations per mini-batch (default: 49)')
+parser.add_argument('--nc', type=int, default=20,
+                    help='number of clusters for pseudolabels (default: 20)')
 parser.add_argument('--lr', type=float, default=0.001,
                     help='learning rate (default: 0.001)')
 parser.add_argument('--mom', type=float, default=0.9,
@@ -43,10 +44,8 @@ parser.add_argument('--transform', type=str, default='default',
                     help='transform applied to trainset (default: default')
 parser.add_argument('--sampler', type=str, default='random',
                     help='sampler used in augmentloader (default: random')
-parser.add_argument('--pretrain_dir', type=str,  ## REQURIED PARAMETER
+parser.add_argument('--pretrain_dir', type=str, default=None,
                     help='load pretrained checkpoint for assigning labels')
-parser.add_argument('--plabels', type=str,
-                    help='path to pseudolabels for self-supervised learning')
 parser.add_argument('--pretrain_epo', type=int, default=None,
                     help='load pretrained epoch for assigning labels')
 parser.add_argument('--savedir', type=str, default='./saved_models/',
@@ -56,30 +55,36 @@ args = parser.parse_args()
 
 ## Pipelines Setup
 model_dir = os.path.join(args.savedir,
-               'selfsup_{}+{}_{}_epo{}_bs{}_aug{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_eps{}{}'.format(
-                    args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.lr, 
+               'selfsup_{}+{}_{}_epo{}_bs{}_aug{}_nc{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_eps{}{}'.format(
+                    args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.nc, args.lr, 
                     args.mom, args.wd, args.gam1, args.gam2, args.eps, args.tail))
 utils.init_pipeline(model_dir)
 utils.save_params(model_dir, vars(args))
 
 
 ## per model functions
-def adjust_learning_rate(optimizer, epoch):
-    """decrease the learning rate"""
+def lr_schedule(epoch, optimizer):
+    """decrease the learning rate."""
     lr = args.lr
-    if epoch >= 10:
-        lr = args.lr * 0.1
-    if epoch >= 13:
-        lr = args.lr * 0.01
-    if epoch >= 16:
-        lr = args.lr * 0.001
+    # if epoch > 10:
+    #     lr = args.lr * 0.1
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
+def plabels_schedule(epoch, net, data, trainloader, n_clusters=10, gamma=100):
+    """update labels using clutsering."""
+    if epoch != 0 and epoch % 5 == 0: #test
+        plabels, accuracy = tf.get_plabels(net, data, n_clusters=n_clusters, gamma=100)
+        trainloader.update_labels(plabels)
+        utils.save_labels(model_dir, plabels, epoch)
+        print(f'epoch {epoch} - accuracy {accuracy}')
+
 
 ## Prepare for Training
-net = tf.load_architectures(args.arch, args.fd).cuda()
-pretrain = tf.load_checkpoint(args.pretrain_dir. args.pretrain_epo)
+if args.pretrain_dir is not None:
+    net, _ = tf.load_checkpoint(args.pretrain_dir, args.pretrain_epo)  
+else:
+    net = tf.load_architectures(args.arch, args.fd)
 transforms = tf.load_transforms(args.transform)
 trainset = tf.load_trainset(args.data)
 trainloader = AugmentLoader(trainset,
@@ -92,12 +97,16 @@ optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=ar
 
 
 ## Training
-trainloader.update_labels(args.plabels)
 for epoch in range(args.epo):
-    adjust_learning_rate(optimizer, epoch)
+    lr_schedule(epoch, optimizer)
+    plabels_schedule(epoch, net, args.data, trainloader, n_clusters=args.nc)
     for step, (batch_imgs, batch_lbls, batch_idx) in enumerate(trainloader):
         batch_features = net(batch_imgs.cuda())
-        loss, loss_empi, loss_theo = criterion(batch_features, batch_idx)
+        if epoch > 5:
+            loss, loss_empi, loss_theo = criterion(batch_features, batch_lbls)
+        else:
+            loss, loss_empi, loss_theo = criterion(batch_features, batch_idx)
+
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
