@@ -18,8 +18,8 @@ parser.add_argument('--fd', type=int, default=32,
                     help='dimension of feature dimension (default: 32)')
 parser.add_argument('--data', type=str, default='cifar10',
                     help='dataset for training (default: CIFAR10)')
-parser.add_argument('--epo', type=int, default=400,
-                    help='number of epochs for training (default: 400)')
+parser.add_argument('--epo', type=int, default=50,
+                    help='number of epochs for training (default: 50)')
 parser.add_argument('--bs', type=int, default=1000,
                     help='input batch size for training (default: 1000)')
 parser.add_argument('--aug', type=int, default=49,
@@ -57,15 +57,12 @@ utils.save_params(model_dir, vars(args))
 
 
 ## per model functions
-def adjust_learning_rate(optimizer, epoch):
+def lr_schedule(epoch, optimizer):
     """decrease the learning rate"""
-    lr = args.lr
-    if epoch >= 10:
-        lr = args.lr * 0.1
-    if epoch >= 13:
-        lr = args.lr * 0.01
-    if epoch >= 16:
-        lr = args.lr * 0.001
+    lr = list(iter(optimizer.param_groups))[0]['lr']
+    if epoch == 5 or epoch == 8:
+        lr = lr * 0.1
+        print(f'current learning rate: {lr}')
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
@@ -85,7 +82,7 @@ optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=ar
 
 ## Training
 for epoch in range(args.epo):
-    adjust_learning_rate(optimizer, epoch)
+    lr_schedule(epoch, optimizer)
     for step, (batch_imgs, batch_lbls, batch_idx) in enumerate(trainloader):
         batch_features = net(batch_imgs.cuda())
         loss, loss_empi, loss_theo = criterion(batch_features, batch_idx)
