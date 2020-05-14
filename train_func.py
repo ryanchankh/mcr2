@@ -6,12 +6,14 @@ import torch
 import torch.nn
 import torchvision
 import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
+
+from clustering import ElasticNetSubspaceClustering, clustering_accuracy
 import utils
 
 
 def load_architectures(name, dim):
     _name = name.lower()
-
     if _name == "resnet18":
         from architectures.resnet_cifar import ResNet18
         net = ResNet18(dim)
@@ -28,8 +30,11 @@ def load_architectures(name, dim):
         from architectures.resnet_cifar import ResNet152
         net = ResNet152(dim)
     elif _name == "resnet18mod":
-        from architectures.resnet_cifar import ResNet152
+        from architectures.resnet_cifar import ResNet18Mod
         net = ResNet18Mod(dim)
+    elif _name == "resnet18old":
+        from architectures.resnet_cifar import ResNet18Old
+        net = ResNet18Old(dim) 
     else:
         raise NameError("{} not found in archiectures.".format(name))
     # return net.cuda()
@@ -95,9 +100,10 @@ def load_checkpoint(model_dir, epoch=None, eval_=False):
     state_dict = torch.load(ckpt_path, map_location=lambda storage, loc: storage)
     net = load_architectures(params['arch'], params['fd'])
     net.load_state_dict(state_dict)
+    net = torch.nn.DataParallel(net)
     del state_dict
     if eval_:
-        net = net.eval()
+        net.eval()
     return net, epoch
 
     
@@ -111,6 +117,19 @@ def get_features(net, trainloader):
         features.append(batch_features.cpu().detach())
         labels.append(batch_lbls)
     return torch.cat(features), torch.cat(labels)
+    
+
+def get_plabels(net, data, n_clusters=10, gamma=100):
+    transform = load_transforms('test')
+    trainset = load_trainset(data, transform)
+    trainloader = DataLoader(trainset, batch_size=500, num_workers=4)
+    features, labels = get_features(net, trainloader)
+    clustermd = ElasticNetSubspaceClustering(n_clusters=n_clusters, algorithm='spams', 
+                                                gamma=gamma)
+    clustermd.fit(features)
+    plabels = clustermd.labels_
+    accuracy = clustering_accuracy(labels, plabels)
+    return plabels, accuracy
 
 
 def corrupt_labels(trainset, ratio, seed):
@@ -125,14 +144,6 @@ def corrupt_labels(trainset, ratio, seed):
         labels_[idx] = np.random.choice(np.delete(np.arange(num_classes), labels[idx]))
     trainset.targets = labels_
     return trainset
-
-
-def update_labels_by_clustering(features, true_labels=None):
-    clustermd = ElasticNetSubspaceClustering(n_clusters=10,affinity='symmetrize',algorithm='spams',active_support=True,gamma=120,tau=0.9).fit(features)
-    clus_lbls = clustermd.labels_
-    clus_acc = clustering_accuracy(true_labels, clus_lbls)
-    print("clustering accuracy:", clus_acc)
-    return torch.tensor(clus_lbls)
 
 
 def label_to_membership(targets, num_classes=None):
