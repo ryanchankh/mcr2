@@ -37,8 +37,8 @@ def load_architectures(name, dim):
         net = ResNet18Old(dim) 
     else:
         raise NameError("{} not found in archiectures.".format(name))
-    # return net.cuda()
-    return torch.nn.DataParallel(net).cuda()
+    return net.cuda()
+    # return torch.nn.DataParallel(net).cuda()
 
 
 def load_trainset(name, transform=None, train=True):
