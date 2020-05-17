@@ -178,5 +178,5 @@ tags
 # End of https://www.gitignore.io/api/vim,macos,python,jupyternotebooks
 #
 #
-./data/
-./saved_models/
+./data/*
+./saved_models/*
