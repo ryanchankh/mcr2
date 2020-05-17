@@ -54,6 +54,7 @@ args = parser.parse_args()
 
 
 ## Pipelines Setup
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 model_dir = os.path.join(args.savedir,
                'selfsup_{}+{}_{}_epo{}_bs{}_aug{}_nc{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_eps{}{}'.format(
                     args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.nc, args.lr, 
