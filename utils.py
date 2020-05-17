@@ -76,7 +76,7 @@ def save_labels(model_dir, labels, epoch):
 
 def compute_accuracy(y_pred, y_true):
     assert y_pred.shape == y_true.shape
-    return 1 - np.count_nonzero(y_pred - y_true) / y_true.size()[0]
+    return 1 - np.count_nonzero(y_pred - y_true) / y_true.size
 
 
 def clustering_accuracy(labels_true, labels_pred):
