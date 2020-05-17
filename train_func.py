@@ -38,10 +38,8 @@ def load_architectures(name, dim):
     else:
         raise NameError("{} not found in archiectures.".format(name))
     
-    if _name[-3:] == 'old':
-        return net.cuda()
-    else:
-        return torch.nn.DataParallel(net).cuda()
+    # return net.cuda()
+    return torch.nn.DataParallel(net).cuda()
 
 
 def load_trainset(name, transform=None, train=True):
@@ -100,10 +98,10 @@ def load_checkpoint(model_dir, epoch=None, eval_=False):
     ckpt_path = os.path.join(model_dir, 'checkpoints', 'model-epoch{}.pt'.format(epoch))
     params = utils.load_params(model_dir)
     print('Loading checkpoint: {}'.format(ckpt_path))
-    state_dict = torch.load(ckpt_path, map_location=lambda storage, loc: storage)
+    state_dict = torch.load(ckpt_path)
     net = load_architectures(params['arch'], params['fd'])
     net.load_state_dict(state_dict)
-    net = torch.nn.DataParallel(net)
+    # net = torch.nn.DataParallel(net)
     del state_dict
     if eval_:
         net.eval()
@@ -123,6 +121,7 @@ def get_features(net, trainloader):
     
 
 def get_plabels(net, data, n_clusters=10, gamma=100):
+    net.eval()
     transform = load_transforms('test')
     trainset = load_trainset(data, transform)
     trainloader = DataLoader(trainset, batch_size=500, num_workers=4)
@@ -132,6 +131,7 @@ def get_plabels(net, data, n_clusters=10, gamma=100):
     clustermd.fit(features)
     plabels = clustermd.labels_
     accuracy = clustering_accuracy(labels, plabels)
+    net.train()
     return plabels, accuracy
 
 
