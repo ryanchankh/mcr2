@@ -71,6 +71,70 @@ def plot_loss(args):
     print("Plot saved to: {}".format(file_name))
 
 
+def plot_loss2():
+    def moving_average(arr, size=(9, 9)):
+        assert len(size) == 2
+        mean_ = []
+        min_ = []
+        max_ = [] 
+        for i in range(len(arr)):
+            l, r = i-size[0], i+size[1]
+            l, r = np.max([l, 0]), r + 1 #adjust bounds
+            mean_.append(np.mean(arr[l:r]))
+            min_.append(np.amin(arr[l:r]))
+            max_.append(np.amax(arr[l:r]))
+        return mean_, min_, max_
+
+    ## create saving directory
+    loss_dir = os.path.join(args.model_dir, 'figures', 'loss')
+    if not os.path.exists(loss_dir):
+        os.makedirs(loss_dir)
+    file_dir = os.path.join(args.model_dir, 'losses.csv')
+    data = pd.read_csv(file_dir)
+
+    ## extract loss from csv
+    obj_loss_e = -data['loss'].ravel()
+    dis_loss_e = data['discrimn_loss_e'].ravel()
+    com_loss_e = data['compress_loss_e'].ravel()
+    dis_loss_t = data['discrimn_loss_t'].ravel()
+    com_loss_t = data['compress_loss_t'].ravel()
+    obj_loss_t = dis_loss_t - com_loss_t
+    avg_dis_loss_t, min_dis_loss_t, max_dis_loss_t = moving_average(dis_loss_t)
+    avg_com_loss_t, min_com_loss_t, max_com_loss_t = moving_average(com_loss_t)
+    avg_obj_loss_t, min_obj_loss_t, max_obj_loss_t = moving_average(obj_loss_t)
+    plt.rc('text', usetex=True)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
+    fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
+    num_iter = np.arange(len(obj_loss_t))
+    ax.plot(num_iter, avg_obj_loss_t, label=r'$\mathcal{L}^d-\mathcal{L}^c$', 
+                color='green', linewidth=1.0, alpha=0.8)
+    ax.plot(num_iter, avg_dis_loss_t, label=r'$\mathcal{L}^d$', 
+                color='royalblue', linewidth=1.0, alpha=0.8)
+    ax.plot(num_iter, avg_com_loss_t, label=r'$\mathcal{L}^c$', 
+                color='coral', linewidth=1.0, alpha=0.8)
+    ax.fill_between(num_iter, max_obj_loss_t, min_obj_loss_t, facecolor='green', alpha=0.5)
+    ax.fill_between(num_iter, max_dis_loss_t, min_dis_loss_t, facecolor='royalblue', alpha=0.5)
+    ax.fill_between(num_iter, max_com_loss_t, min_com_loss_t, facecolor='coral', alpha=0.5)
+    ax.set_ylabel('Loss', fontname='Roman', fontsize=12)
+    ax.set_xlabel('Number of iterations', fontname='roman', fontsize=12)
+    ax.legend(loc='lower right', frameon=True, fancybox=True, prop={"size": 14}, ncol=3, framealpha=0.5)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
+    ax.grid(True, color='white')
+    ax.set_facecolor('whitesmoke')
+
+    plt.tight_layout()
+    file_name = os.path.join(loss_dir, 'loss_theo.png')
+    plt.savefig(file_name, dpi=400)
+    plt.close()
+    print("Plot saved to: {}".format(file_name))
+
+
 def plot_pca(args, features, epoch):
     ## create save folder
     pca_dir = os.path.join(args.model_dir, 'figures', 'pca')
@@ -108,7 +172,42 @@ def plot_pca(args, features, epoch):
     plt.close()
     print("Plot saved to: {}".format(file_name))
 
-def plot_hist(args, features_per_class, epoch):
+# def plot_hist(args, features, epoch):
+#     ## create save folder
+#     hist_folder = os.path.join(args.model_dir, 'figures', 'hist')
+#     if not os.path.exists(hist_folder):
+#         os.makedirs(hist_folder)
+#     else:
+#         files = glob.glob(hist_folder+"/*")
+#         for f in files:
+#             os.remove(f)
+
+#     num_classes = len(trainset.classes)
+#     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
+#                             num_classes=num_classes, stack=False)
+#     features_sort = [data_c[:num_samples] for data_c in features_sort]
+#     for i in range(num_classes):
+#         for j in range(i, num_classes):
+#             fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
+#             if i == j:
+#                 sim_mat = features_sort[i] @ features_sort[j].T
+#                 sim_mat = sim_mat[np.triu_indices(sim_mat.shape[0], k = 1)]
+#             else:
+#                 sim_mat = (features_sort[i] @ features_sort[j].T).reshape(-1)
+#             ax.hist(sim_mat, bins=40, color='red', alpha=0.5)
+#             ax.set_xlabel("cosine similarity")
+#             ax.set_ylabel("count")
+#             ax.set_title(f"Class {i} vs. Class {j}")
+#             ax.spines['right'].set_visible(False)
+#             ax.spines['top'].set_visible(False)
+#             fig.tight_layout()
+
+#             file_name = os.path.join(hist_folder, f"hist_{i}v{j}")
+#             fig.savefig(file_name)
+#             plt.close()
+#             print("Plot saved to: {}".format(file_name))
+    
+def plot_hist(args, features, epoch):
     ## create save folder
     hist_folder = os.path.join(args.model_dir, 'figures', 'hist')
     if not os.path.exists(hist_folder):
@@ -121,6 +220,8 @@ def plot_hist(args, features_per_class, epoch):
     num_classes = len(trainset.classes)
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=num_classes, stack=False)
+
+    # class vs class
     for i in range(num_classes):
         for j in range(i, num_classes):
             fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
@@ -141,6 +242,41 @@ def plot_hist(args, features_per_class, epoch):
             fig.savefig(file_name)
             plt.close()
             print("Plot saved to: {}".format(file_name))
+
+    # single vs all
+    plt.rc('text', usetex=True)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman']
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
+    i = 0
+    temp = []
+    for j in range(i, num_classes):
+        if i == j:
+            sim_mat = features_sort[i] @ features_sort[j].T
+            sim_mat = sim_mat[np.triu_indices(sim_mat.shape[0], k=1)]
+            h1 = ax.hist(sim_mat, bins=40, color='green', alpha=0.1, label='within class')
+        else:
+            sim_mat = (features_sort[i] @ features_sort[j].T).reshape(-1)
+            temp.append(sim_mat)
+            h2 = ax.hist(sim_mat, bins=40, color='red', alpha=0.1)
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+    ax.legend([h1[2][0], h2[2][0]], ['within class', 'outside class'])
+    ax.grid(True, color='white', axis='y')
+    ax.set_xlim(0, 1.)
+    ax.set_facecolor('whitesmoke')
+    ax.set_xlabel("cosine similarity")
+    ax.set_ylabel("count")
+    plt.tight_layout()
+    plt.show()
+
+    file_name = os.path.join(hist_folder, f"hist_0vAll.png")
+    fig.savefig(file_name)
+    plt.close()
+    print("Plot saved to: {}".format(file_name))
+
 
 
 if __name__ == "__main__":
