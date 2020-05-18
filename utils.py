@@ -27,14 +27,11 @@ def init_pipeline(model_dir):
     os.makedirs(os.path.join(model_dir, 'checkpoints'))
     os.makedirs(os.path.join(model_dir, 'figures'))
     os.makedirs(os.path.join(model_dir, 'plabels'))
-    print("project dir: {}".format(model_dir))
-
-    # csv
-    csv_path = os.path.join(model_dir, 'losses.csv')
     headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
         "discrimn_loss_t",  "compress_loss_t"]
-    with open(csv_path, 'a') as f:
-        f.write(','.join(map(str, headers)))
+    create_csv(model_dir, 'losses.csv', headers)
+
+    print("project dir: {}".format(model_dir))
 
 
 def dataset_per_class(images, labels, num_classes):
@@ -42,6 +39,15 @@ def dataset_per_class(images, labels, num_classes):
     for i, lbl in enumerate(labels):
         new_images[lbl].append(images[i])
     return np.array(new_images)
+
+
+def create_csv(model_dir, filename, headers):
+    csv_path = os.path.join(model_dir, filename)
+    if os.path.exists(csv_path):
+        os.remove(csv_path)
+    with open(csv_path, 'w+') as f:
+        f.write(','.join(map(str, headers)))
+    return csv_path
 
 
 def save_params(model_dir, params):
