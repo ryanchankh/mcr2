@@ -346,8 +346,10 @@ def plot_traintest(args):
     test_file = os.path.join(args.model_dir, 'losses_test.csv')
     assert os.path.exists(train_file), 'losses.csv not found'
     assert os.path.exists(test_file), 'losses_test.csv not found'
-    df_train_mean, df_train_max, df_train_min = process_df(pd.read_csv(train_file))
-    df_test_mean, df_test_max, df_test_min = process_df(pd.read_csv(test_file))
+    df_train = pd.read_csv(train_file)
+    df_test = pd.read_csv(test_file)
+    df_train_mean, df_train_max, df_train_min = process_df(df_train)
+    df_test_mean, df_test_max, df_test_min = process_df(df_test)
     
     train_dis_loss_mean = df_train_mean['discrimn_loss_t'].ravel()
     train_com_loss_mean = df_train_mean['compress_loss_t'].ravel()
