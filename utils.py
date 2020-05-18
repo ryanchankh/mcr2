@@ -57,8 +57,8 @@ def load_params(model_dir):
     return _dict
 
 
-def save_state(model_dir, *entries):
-    csv_path = os.path.join(model_dir, 'losses.csv')
+def save_state(model_dir, *entries, filename='losses.csv'):
+    csv_path = os.path.join(model_dir, filename)
     assert os.path.exists(csv_path), 'CSV file is missing in project directory.'
     with open(csv_path, 'a') as f:
         f.write('\n'+','.join(map(str, entries)))

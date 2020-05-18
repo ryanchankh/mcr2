@@ -1,6 +1,7 @@
 import argparse
 import os
 import glob
+from tqdm import tqdm
 
 import pandas as pd
 import numpy as np
@@ -10,6 +11,9 @@ from torch.utils.data import DataLoader
 
 import utils
 import train_func as tf
+
+import matplotlib.font_manager as fm
+from loss import CompressibleLoss
 
 
 def plot_loss(args):
@@ -46,6 +50,9 @@ def plot_loss(args):
     plt.tight_layout()
     file_name = os.path.join(loss_dir, 'loss_theoretical.png')
     plt.savefig(file_name, dpi=400)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(loss_dir, 'loss_theoretical.pdf')
+    plt.savefig(file_name, dpi=400)
     plt.close()
     print("Plot saved to: {}".format(file_name))
 
@@ -67,11 +74,14 @@ def plot_loss(args):
     plt.tight_layout()
     file_name = os.path.join(loss_dir, 'loss_empirical.png')
     plt.savefig(file_name, dpi=400)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(loss_dir, 'loss_empirical.pdf')
+    plt.savefig(file_name, dpi=400)
     plt.close()
     print("Plot saved to: {}".format(file_name))
 
 
-def plot_loss2():
+def plot_loss_paper(args):
     def moving_average(arr, size=(9, 9)):
         assert len(size) == 2
         mean_ = []
@@ -86,7 +96,7 @@ def plot_loss2():
         return mean_, min_, max_
 
     ## create saving directory
-    loss_dir = os.path.join(args.model_dir, 'figures', 'loss')
+    loss_dir = os.path.join(args.model_dir, 'figures', 'loss_paper')
     if not os.path.exists(loss_dir):
         os.makedirs(loss_dir)
     file_dir = os.path.join(args.model_dir, 'losses.csv')
@@ -102,16 +112,16 @@ def plot_loss2():
     avg_dis_loss_t, min_dis_loss_t, max_dis_loss_t = moving_average(dis_loss_t)
     avg_com_loss_t, min_com_loss_t, max_com_loss_t = moving_average(com_loss_t)
     avg_obj_loss_t, min_obj_loss_t, max_obj_loss_t = moving_average(obj_loss_t)
-    plt.rc('text', usetex=True)
+    plt.rc('text', usetex=False)
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
     num_iter = np.arange(len(obj_loss_t))
-    ax.plot(num_iter, avg_obj_loss_t, label=r'$\mathcal{L}^d-\mathcal{L}^c$', 
+    ax.plot(num_iter, avg_obj_loss_t, label=r'$R - R^c$', #label=r'$\mathcal{L}^d-\mathcal{L}^c$', 
                 color='green', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, avg_dis_loss_t, label=r'$\mathcal{L}^d$', 
+    ax.plot(num_iter, avg_dis_loss_t, label=r'$R$', #label=r'$\mathcal{L}^d$', 
                 color='royalblue', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, avg_com_loss_t, label=r'$\mathcal{L}^c$', 
+    ax.plot(num_iter, avg_com_loss_t, label=r'$R^c$',#'$\mathcal{L}^c$', 
                 color='coral', linewidth=1.0, alpha=0.8)
     ax.fill_between(num_iter, max_obj_loss_t, min_obj_loss_t, facecolor='green', alpha=0.5)
     ax.fill_between(num_iter, max_dis_loss_t, min_dis_loss_t, facecolor='royalblue', alpha=0.5)
@@ -127,15 +137,18 @@ def plot_loss2():
     [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
     ax.grid(True, color='white')
     ax.set_facecolor('whitesmoke')
+    fig.tight_layout()
 
-    plt.tight_layout()
-    file_name = os.path.join(loss_dir, 'loss_theo.png')
+    file_name = os.path.join(loss_dir, 'loss_theoretical.png')
     plt.savefig(file_name, dpi=400)
-    plt.close()
     print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(loss_dir, 'loss_theoretical.pdf')
+    plt.savefig(file_name, dpi=400)
+    print("Plot saved to: {}".format(file_name))
+    plt.close()
 
 
-def plot_pca(args, features, epoch):
+def plot_pca(args, features, labels, epoch):
     ## create save folder
     pca_dir = os.path.join(args.model_dir, 'figures', 'pca')
     if not os.path.exists(pca_dir):
@@ -172,56 +185,16 @@ def plot_pca(args, features, epoch):
     plt.close()
     print("Plot saved to: {}".format(file_name))
 
-# def plot_hist(args, features, epoch):
-#     ## create save folder
-#     hist_folder = os.path.join(args.model_dir, 'figures', 'hist')
-#     if not os.path.exists(hist_folder):
-#         os.makedirs(hist_folder)
-#     else:
-#         files = glob.glob(hist_folder+"/*")
-#         for f in files:
-#             os.remove(f)
 
-#     num_classes = len(trainset.classes)
-#     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
-#                             num_classes=num_classes, stack=False)
-#     features_sort = [data_c[:num_samples] for data_c in features_sort]
-#     for i in range(num_classes):
-#         for j in range(i, num_classes):
-#             fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
-#             if i == j:
-#                 sim_mat = features_sort[i] @ features_sort[j].T
-#                 sim_mat = sim_mat[np.triu_indices(sim_mat.shape[0], k = 1)]
-#             else:
-#                 sim_mat = (features_sort[i] @ features_sort[j].T).reshape(-1)
-#             ax.hist(sim_mat, bins=40, color='red', alpha=0.5)
-#             ax.set_xlabel("cosine similarity")
-#             ax.set_ylabel("count")
-#             ax.set_title(f"Class {i} vs. Class {j}")
-#             ax.spines['right'].set_visible(False)
-#             ax.spines['top'].set_visible(False)
-#             fig.tight_layout()
-
-#             file_name = os.path.join(hist_folder, f"hist_{i}v{j}")
-#             fig.savefig(file_name)
-#             plt.close()
-#             print("Plot saved to: {}".format(file_name))
-    
-def plot_hist(args, features, epoch):
+def plot_hist(args, features, labels, epoch):
     ## create save folder
     hist_folder = os.path.join(args.model_dir, 'figures', 'hist')
     if not os.path.exists(hist_folder):
         os.makedirs(hist_folder)
-    else:
-        files = glob.glob(hist_folder+"/*")
-        for f in files:
-            os.remove(f)
 
-    num_classes = len(trainset.classes)
+    num_classes = labels.numpy().max() + 1
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=num_classes, stack=False)
-
-    # class vs class
     for i in range(num_classes):
         for j in range(i, num_classes):
             fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
@@ -243,56 +216,223 @@ def plot_hist(args, features, epoch):
             plt.close()
             print("Plot saved to: {}".format(file_name))
 
-    # single vs all
-    plt.rc('text', usetex=True)
-    plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman']
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
+
+def plot_hist_paper(args, features, labels, epoch):
+    ## create save folder
+    hist_folder = os.path.join(args.model_dir, 'figures', 'hist_paper')
+    if not os.path.exists(hist_folder):
+        os.makedirs(hist_folder)
+
+    num_classes = len(trainset.classes)
+    features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
+                            num_classes=num_classes, stack=False)
     i = 0
-    temp = []
-    for j in range(i, num_classes):
-        if i == j:
-            sim_mat = features_sort[i] @ features_sort[j].T
-            sim_mat = sim_mat[np.triu_indices(sim_mat.shape[0], k=1)]
-            h1 = ax.hist(sim_mat, bins=40, color='green', alpha=0.1, label='within class')
-        else:
-            sim_mat = (features_sort[i] @ features_sort[j].T).reshape(-1)
-            temp.append(sim_mat)
-            h2 = ax.hist(sim_mat, bins=40, color='red', alpha=0.1)
-        ax.spines['right'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-        ax.spines['bottom'].set_visible(False)
-        ax.spines['left'].set_visible(False)
-    ax.legend([h1[2][0], h2[2][0]], ['within class', 'outside class'])
+    ## inside class
+    plt.rc('text', usetex=False)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
+    sim_mat = features_sort[i] @ features_sort[i].T
+    sim_mat = sim_mat[np.triu_indices(sim_mat.shape[0], k=1)][-500:]
+    ax.hist(sim_mat, bins=30, color='green', alpha=0.4, density=True)
     ax.grid(True, color='white', axis='y')
     ax.set_xlim(0, 1.)
     ax.set_facecolor('whitesmoke')
     ax.set_xlabel("cosine similarity")
-    ax.set_ylabel("count")
-    plt.tight_layout()
-    plt.show()
+    ax.set_ylabel("density")
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False) 
+    fig.tight_layout()
 
-    file_name = os.path.join(hist_folder, f"hist_0vAll.png")
+    file_name = os.path.join(hist_folder, f"hist_0v0.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(hist_folder, f"hist_0v0.pdf")
     fig.savefig(file_name)
     plt.close()
     print("Plot saved to: {}".format(file_name))
 
+    ## outside class
+    plt.rc('text', usetex=False)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
+    temp = []
+    for j in range(num_classes):
+        sim_mat = (features_sort[i] @ features_sort[j].T).reshape(-1)
+        temp.append(sim_mat)
+    temp = np.hstack(temp)
+    ax.hist(temp, bins=30, color='red', alpha=0.4, density=True)
+    ax.grid(True, color='white', axis='y')
+    ax.set_xlim(0, 1.)
+    ax.set_facecolor('whitesmoke')
+    ax.set_xlabel("cosine similarity")
+    ax.set_ylabel("density")
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False) 
+    fig.tight_layout()
+
+    file_name = os.path.join(hist_folder, f"hist_0vall.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(hist_folder, f"hist_0vall.pdf")
+    fig.savefig(file_name)
+    plt.close()
+    print("Plot saved to: {}".format(file_name))
+
+
+def gen_testloss(args):
+    # load data and model
+    params = utils.load_params(args.model_dir)
+    ckpt_dir = os.path.join(args.model_dir, 'checkpoints')
+    ckpt_paths = [int(e[11:-3]) for e in os.listdir(ckpt_dir) if e[-3:] == ".pt"]
+    ckpt_paths = np.sort(ckpt_paths)
+    
+    # csv
+    csv_path = os.path.join(args.model_dir, 'losses_test.csv')
+    headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
+        "discrimn_loss_t",  "compress_loss_t"]
+    if os.path.exists(csv_path):
+        os.remove(csv_path)
+    with open(csv_path, 'w') as f:
+        f.write(','.join(map(str, headers)))
+    print('writing to:', csv_path)
+
+    test_transforms = tf.load_transforms('test')
+    testset = tf.load_trainset(params['data'], test_transforms, train=False)
+    testloader = DataLoader(testset, batch_size=params['bs'], shuffle=False, num_workers=4)
+    
+    # save loss
+    criterion = CompressibleLoss(gam1=params['gam1'], gam2=params['gam2'], eps=params['eps'])
+    for epoch, ckpt_path in tqdm(enumerate(ckpt_paths)):
+        net, epoch = tf.load_checkpoint(args.model_dir, epoch=epoch, eval_=True)
+        net = net.cuda().eval()
+        for step, (batch_imgs, batch_lbls) in enumerate(testloader):
+            features = net(batch_imgs.cuda())
+            loss, loss_empi, loss_theo = criterion(features, batch_lbls, 
+                                            num_classes=len(testset.classes))
+            utils.save_state(args.model_dir, epoch, step, loss.item(), 
+                *loss_empi, *loss_theo, filename='losses_test.csv')
+    print("Test loss computation complete.")
+
+
+def plot_traintest(args):
+    def process_df(data):
+        epochs = data['epoch'].ravel().max()
+        mean_, max_, min_ = [], [], []
+        for epoch in np.arange(epochs+1):
+            row = data[data['epoch'] == epoch].drop(columns=['step', 'discrimn_loss_e', 'compress_loss_e'])
+            mean_.append(row.mean())
+            max_.append(row.max())
+            min_.append(row.min())
+        return pd.DataFrame(mean_), pd.DataFrame(max_), pd.DataFrame(min_)
+    train_file = os.path.join(args.model_dir, 'losses.csv')
+    test_file = os.path.join(args.model_dir, 'losses_test.csv')
+    assert os.path.exists(train_file), 'losses.csv not found'
+    assert os.path.exists(test_file), 'losses_test.csv not found'
+    df_train_mean, df_train_max, df_train_min = process_df(pd.read_csv(train_file))
+    df_test_mean, df_test_max, df_test_min = process_df(pd.read_csv(test_file))
+    
+    train_dis_loss_mean = df_train_mean['discrimn_loss_t'].ravel()
+    train_com_loss_mean = df_train_mean['compress_loss_t'].ravel()
+    train_obj_loss_mean = train_dis_loss_mean - train_com_loss_mean
+    train_dis_loss_max = df_train_max['discrimn_loss_t'].ravel()
+    train_com_loss_max = df_train_max['compress_loss_t'].ravel()
+    train_obj_loss_max = train_dis_loss_max - train_com_loss_max
+    train_dis_loss_min = df_train_min['discrimn_loss_t'].ravel()
+    train_com_loss_min = df_train_min['compress_loss_t'].ravel()
+    train_obj_loss_min = train_dis_loss_min - train_com_loss_min
+
+    test_dis_loss_mean = df_test_mean['discrimn_loss_t'].ravel()
+    test_com_loss_mean = df_test_mean['compress_loss_t'].ravel()
+    test_obj_loss_mean = test_dis_loss_mean - test_com_loss_mean
+    test_dis_loss_max = df_test_max['discrimn_loss_t'].ravel()
+    test_com_loss_max = df_test_max['compress_loss_t'].ravel()
+    test_obj_loss_max = test_dis_loss_max - test_com_loss_max
+    test_dis_loss_min = df_test_min['discrimn_loss_t'].ravel()
+    test_com_loss_min = df_test_min['compress_loss_t'].ravel()
+    test_obj_loss_min = test_dis_loss_min - test_com_loss_min
+            
+    # create save folder
+    save_dir = os.path.join(args.model_dir, 'figures', 'loss_paper')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    plt.rc('text', usetex=False)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
+    fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
+    num_iter = np.arange(len(train_obj_loss_mean))
+    ax.plot(num_iter, train_obj_loss_mean, label=r'$R^d-R^c$ (train)', 
+                color='green', linewidth=1.0, alpha=0.8)
+    ax.plot(num_iter, test_obj_loss_mean, label=r'$R^d-R^c$ (test)', 
+                color='green', linewidth=1.0, alpha=0.8, linestyle='--')
+    ax.plot(num_iter, train_dis_loss_mean, label=r'$R^d$ (train)', 
+                color='royalblue', linewidth=1.0, alpha=0.8)
+    ax.plot(num_iter, test_dis_loss_mean, label=r'$R^d$ (test)', 
+                color='royalblue', linewidth=1.0, alpha=0.8, linestyle='--')
+    ax.plot(num_iter, train_com_loss_mean, label=r'$R^c$ (train)', 
+                color='coral', linewidth=1.0, alpha=0.8)
+    ax.plot(num_iter, test_com_loss_mean, label=r'$R^c$ (test)', 
+                color='coral', linewidth=1.0, alpha=0.8, linestyle='--')
+    # ax.fill_between(num_iter, train_obj_loss_max, train_obj_loss_min, facecolor='green', alpha=0.5)
+    # ax.fill_between(num_iter, train_dis_loss_max, train_dis_loss_min, facecolor='royalblue', alpha=0.5)
+    # ax.fill_between(num_iter, train_com_loss_max, train_com_loss_min, facecolor='coral', alpha=0.5)
+    # ax.fill_between(num_iter, test_obj_loss_max, test_obj_loss_min, facecolor='green', alpha=0.5)
+    # ax.fill_between(num_iter, test_dis_loss_max, test_dis_loss_min, facecolor='royalblue', alpha=0.5)
+    # ax.fill_between(num_iter, test_com_loss_max, test_com_loss_min, facecolor='coral', alpha=0.5)
+    ax.set_ylabel('Loss', fontname='Roman', fontsize=12)
+    ax.set_xlabel('Epoch', fontname='roman', fontsize=12)
+    ax.legend(loc='lower right', frameon=True, fancybox=True, prop={"size": 8}, ncol=3, framealpha=0.5)
+    ax.set_ylim(0, 80)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
+    ax.grid(True, color='white')
+    ax.set_facecolor('whitesmoke')
+    fig.tight_layout()
+
+    file_name = os.path.join(save_dir, f"loss_traintest.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(save_dir, f"loss_traintest.pdf")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    plt.close()
+    
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Ploting')
     parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
     parser.add_argument('--loss', help='plot losses from training', action='store_true')
+    parser.add_argument('--loss_paper', help='plot losses from training', action='store_true')
     parser.add_argument('--hist', help='plot histogram of cosine similarity of features', action='store_true')
+    parser.add_argument('--hist_paper', help='plot histogram of cosine similarity of features', action='store_true')
     parser.add_argument('--pca', help='plot PCA singular values of feautres', action='store_true')
+    parser.add_argument('--traintest', help='plot train and test loss comparison plot', action='store_true')
+    parser.add_argument('--testloss', help='create test loss csv', action='store_true')
     parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
     parser.add_argument('--comp', type=int, default=30, help='number of components for PCA (default: 30)')
     args = parser.parse_args()
     
     if args.loss:
         plot_loss(args)
+    if args.loss_paper:
+        plot_loss_paper(args)
+    if args.testloss:
+        gen_testloss(args)
+    if args.traintest:
+        plot_traintest(args)
 
-    if args.pca or args.hist:
+    if args.pca or args.hist or args.hist_paper:
         ## load data and model
         params = utils.load_params(args.model_dir)
         net = tf.load_architectures(params['arch'], params['fd']).cuda()
@@ -305,6 +445,8 @@ if __name__ == "__main__":
         features, labels = tf.get_features(net, trainloader)
 
     if args.pca:
-        plot_pca(args, features, epoch)
+        plot_pca(args, features, labels, epoch)
     if args.hist:
-        plot_hist(args, features, epoch)
+        plot_hist(args, features, labels, epoch)
+    if args.hist_paper:
+        plot_hist_paper(args, features, labels, epoch)
