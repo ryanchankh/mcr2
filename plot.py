@@ -6,7 +6,7 @@ from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, TruncatedSVD
 from torch.utils.data import DataLoader
 
 import utils
@@ -164,26 +164,39 @@ def plot_pca(args, features, labels, epoch):
         sig_vals.append((pca.singular_values_))
 
     ## plot features
-    fig, ax = plt.subplots(1, 1, figsize=(7, 5), dpi=250)
+    plt.rc('text', usetex=False)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
     x_min = np.min([len(sig_val) for sig_val in sig_vals])
-    ax.plot(np.arange(x_min), sig_vals[0][:x_min], marker='x', markersize=5, color='black', 
-                label=f'all', alpha=0.6)
-    ax.set_xticks(np.arange(0, x_min, 2))
-    ax.set_yticks(np.linspace(0, np.int32(np.max(sig_vals[0])), 10))
+    # ax.plot(np.arange(x_min), sig_vals[0][:x_min], color='black', 
+    #             label=f'all', alpha=0.6)
+    ax.set_xticks(np.arange(0, x_min, 5))
+    ax.set_yticks(np.arange(0, 40, 5))
     for c, sig_val in enumerate(sig_vals[1:]):
-        ax.plot(np.arange(x_min), sig_val[:x_min], marker='.', markersize=5, 
-                    label=f'class {c}', alpha=0.6)
-    ax.legend()
+        ax.plot(np.arange(x_min), sig_val[:x_min], markersize=5, 
+                    label=f'class - {c}', alpha=0.6)
+    ax.legend(loc='upper right', frameon=True, fancybox=True, prop={"size": 8}, ncol=1, framealpha=0.5)
     ax.set_xlabel("components")
     ax.set_ylabel("sigular values")
-    ax.set_title(f"PCA on features (Epoch: {epoch})")
-    ax.spines['right'].set_visible(False)
+    # ax.set_title(f"PCA on features (Epoch: {epoch})")
     ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
+    ax.grid(True, color='white')
+    ax.set_facecolor('whitesmoke')
     fig.tight_layout()
-    file_name = os.path.join(pca_dir, f"pca_epoch{epoch}.png")
+
+    file_name = os.path.join(pca_dir, f"pca_classVclass_epoch{epoch}.png")
     fig.savefig(file_name)
-    plt.close()
     print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(pca_dir, f"pca_classVclass_epoch{epoch}.pdf")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    plt.close()
 
 
 def plot_hist(args, features, labels, epoch):
@@ -308,9 +321,8 @@ def gen_testloss(args):
     
     # save loss
     criterion = CompressibleLoss(gam1=params['gam1'], gam2=params['gam2'], eps=params['eps'])
-    for epoch, ckpt_path in tqdm(enumerate(ckpt_paths)):
+    for epoch, ckpt_path in enumerate(ckpt_paths):
         net, epoch = tf.load_checkpoint(args.model_dir, epoch=epoch, eval_=True)
-        net = net.cuda().eval()
         for step, (batch_imgs, batch_lbls) in enumerate(testloader):
             features = net(batch_imgs.cuda())
             loss, loss_empi, loss_theo = criterion(features, batch_lbls, 
@@ -408,6 +420,73 @@ def plot_traintest(args):
     plt.close()
     
 
+def plot_pca_epoch(args):
+    EPOCHS = [0, 10, 100, 500]
+
+    params = utils.load_params(args.model_dir)
+    transforms = tf.load_transforms('test')
+    trainset = tf.load_trainset(params['data'], transforms)
+    trainloader = DataLoader(trainset, batch_size=200, num_workers=4)
+
+    sig_vals = []
+    for epoch in EPOCHS:
+        epoch_ = epoch - 1
+        if epoch_ == -1: # randomly initialized
+            net = tf.load_architectures(params['arch'], params['fd'])
+        else:
+            net, epoch = tf.load_checkpoint(args.model_dir, epoch=epoch_, eval_=True)
+        features, labels = tf.get_features(net, trainloader)
+        if args.class_ is not None:
+            features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
+                            num_classes=len(trainset.classes), stack=False)
+            features_ = features_sort[args.class_]
+        else:
+            features_ = features.numpy()
+        pca = PCA(n_components=args.comp).fit(features_)
+        sig_vals.append(pca.singular_values_)
+
+    ## plot singular values
+    plt.rc('text', usetex=False)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman']
+    fig, ax = plt.subplots(1, 1, figsize=(7, 5), dpi=400)
+    x_min = np.min([len(sig_val) for sig_val in sig_vals])
+    if args.class_ is not None:
+        ax.set_xticks(np.arange(0, x_min, 10))
+        ax.set_yticks(np.linspace(0, 40, 9))
+        ax.set_ylim(0, 40)
+    else:
+        ax.set_xticks(np.arange(0, x_min, 10))
+        ax.set_yticks(np.linspace(0, 80, 9))
+        ax.set_ylim(0, 90)
+    for epoch, sig_val in zip(EPOCHS, sig_vals):
+        ax.plot(np.arange(x_min), sig_val[:x_min], marker='', markersize=5, 
+                    label=f'epoch - {epoch}', alpha=0.6)
+    ax.legend(loc='upper right', frameon=True, fancybox=True, prop={"size": 8}, ncol=1, framealpha=0.5)
+    ax.set_xlabel("components")
+    ax.set_ylabel("sigular values")
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
+    ax.grid(True, color='white')
+    ax.set_facecolor('whitesmoke')
+    fig.tight_layout()
+
+    ## save
+    save_dir = os.path.join(args.model_dir, 'figures', 'pca')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    file_name = os.path.join(save_dir, f"pca_class{args.class_}.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(save_dir, f"pca_class{args.class_}.pdf")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    plt.close()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Ploting')
@@ -417,10 +496,12 @@ if __name__ == "__main__":
     parser.add_argument('--hist', help='plot histogram of cosine similarity of features', action='store_true')
     parser.add_argument('--hist_paper', help='plot histogram of cosine similarity of features', action='store_true')
     parser.add_argument('--pca', help='plot PCA singular values of feautres', action='store_true')
+    parser.add_argument('--pca_epoch', help='plot PCA singular for different epochs', action='store_true')
     parser.add_argument('--traintest', help='plot train and test loss comparison plot', action='store_true')
     parser.add_argument('--testloss', help='create test loss csv', action='store_true')
     parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
     parser.add_argument('--comp', type=int, default=30, help='number of components for PCA (default: 30)')
+    parser.add_argument('--class_', type=int, default=None, help='which class for PCA (default: None)')
     args = parser.parse_args()
     
     if args.loss:
@@ -431,17 +512,18 @@ if __name__ == "__main__":
         gen_testloss(args)
     if args.traintest:
         plot_traintest(args)
+    if args.pca_epoch:
+        plot_pca_epoch(args)
 
     if args.pca or args.hist or args.hist_paper:
         ## load data and model
         params = utils.load_params(args.model_dir)
-        net = tf.load_architectures(params['arch'], params['fd']).cuda()
         net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
         transforms = tf.load_transforms('test')
         trainset = tf.load_trainset(params['data'], transforms)
         if 'lcr' in params.keys(): # supervised corruption case
             trainset = tf.corrupt_labels(trainset, params['lcr'], params['lcs'])
-        trainloader = DataLoader(trainset, batch_size=200, shuffle=True, num_workers=4)
+        trainloader = DataLoader(trainset, batch_size=200, num_workers=4)
         features, labels = tf.get_features(net, trainloader)
 
     if args.pca:
