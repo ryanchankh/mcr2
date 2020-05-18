@@ -16,8 +16,10 @@ import train_func as tf
 def svm(args, train_features, train_labels, test_features, test_labels):
     svm = LinearSVC(verbose=0)
     svm.fit(train_features, train_labels)
-    acc = svm.score(test_features, test_labels)
-    print("SVM: {}".format(acc))
+    acc_train = svm.score(train_features, train_labels)
+    acc_test = svm.score(test_features, test_labels)
+    print("SVM: {}".format(acc_test))
+    return acc_train, acc_test
 
 
 def knn(args, train_features, train_labels, test_features, test_labels):
@@ -28,6 +30,7 @@ def knn(args, train_features, train_labels, test_features, test_labels):
     test_pred = topk_pred.mode(0).values.detach()
     acc = utils.compute_accuracy(test_pred.numpy(), test_labels.numpy())
     print("kNN: {}".format(acc))
+    return acc
 
 
 def nearsub(args, train_features, train_labels, test_features, test_labels):
@@ -49,8 +52,11 @@ def nearsub(args, train_features, train_labels, test_features, test_labels):
         scores_svd.append(score_svd_j)
     test_predict_pca = np.argmin(scores_pca, axis=0)
     test_predict_svd = np.argmin(scores_svd, axis=0)
-    print('PCA:', utils.compute_accuracy(test_predict_pca, test_labels.numpy()))
-    print('SVD:', utils.compute_accuracy(test_predict_svd, test_labels.numpy()))
+    acc_pca = utils.compute_accuracy(test_predict_pca, test_labels.numpy())
+    acc_svd = utils.compute_accuracy(test_predict_svd, test_labels.numpy())
+    print('PCA: {}'.format(acc_pca))
+    print('SVD: {}'.format(acc_svd))
+    return acc_pca
 
 
 
