@@ -35,6 +35,9 @@ def load_architectures(name, dim):
     elif _name == "resnet18old":
         from architectures.resnet_cifar import ResNet18Old
         net = ResNet18Old(dim) 
+    elif _name == "cnn":
+        from architectures.cnn_small import CNN
+        net = CNN(dim)
     else:
         raise NameError("{} not found in archiectures.".format(name))
     
@@ -53,7 +56,7 @@ def load_trainset(name, transform=None, train=True):
     elif _name == "mnist":
         trainset = torchvision.datasets.MNIST(root="./data/mnist/", train=train, 
                                               download=True, transform=transform)
-    elif _name =="fashion_mnist":
+    elif _name =="fashionmnist":
         trainset = torchvision.datasets.FashionMNIST(root="./data/fashion_mnist/", train=train, 
                                               download=True, transform=transform) 
     elif _name =="usps":
@@ -73,7 +76,7 @@ def load_transforms(name):
             transforms.ToTensor()])
     elif _name == "simclr":
         transform = transforms.Compose([
-            transforms.RandomResizedCrop(28),
+            transforms.RandomResizedCrop(32),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
@@ -102,7 +105,6 @@ def load_transforms(name):
                 transforms.RandomAffine(0, scale=(0.8, 1.1)),
                 transforms.RandomAffine(0, shear=(-20, 20))]), 
             transforms.ToTensor()])
- 
     elif _name == "test":
         transform = transforms.ToTensor()
     else:
@@ -158,17 +160,29 @@ def get_plabels(net, data, n_clusters=10, gamma=100):
     return plabels, accuracy
 
 
+# def corrupt_labels(trainset, ratio, seed):
+#     assert 0 <= ratio < 1, 'ratio should be between 0 and 1'
+#     num_classes = len(trainset.classes)
+#     num_corrupt = int(len(trainset.targets) * ratio)
+#     np.random.seed(seed)
+#     labels = trainset.targets
+#     indices = np.random.choice(len(labels), size=num_corrupt, replace=False)
+#     labels_ = np.copy(labels)
+#     for idx in indices:
+#         labels_[idx] = np.random.choice(np.delete(np.arange(num_classes), labels[idx]))
+#     trainset.targets = labels_
+#     return trainset
+
+
 def corrupt_labels(trainset, ratio, seed):
-    assert 0 <= ratio < 1, 'ratio should be between 0 and 1'
-    num_classes = len(trainset.classes)
-    num_corrupt = int(len(trainset.targets) * ratio)
     np.random.seed(seed)
-    labels = trainset.targets
-    indices = np.random.choice(len(labels), size=num_corrupt, replace=False)
-    labels_ = np.copy(labels)
-    for idx in indices:
-        labels_[idx] = np.random.choice(np.delete(np.arange(num_classes), labels[idx]))
-    trainset.targets = labels_
+    train_labels = np.asarray(trainset.targets)
+    num_classes = np.max(train_labels) + 1
+    n_train = len(train_labels)
+    n_rand = int(len(trainset.data)*ratio)
+    randomize_indices = np.random.choice(range(n_train), size=n_rand, replace=False)
+    train_labels[randomize_indices] = np.random.choice(np.arange(num_classes), size=n_rand, replace=True)
+    trainset.targets = train_labels
     return trainset
 
 
