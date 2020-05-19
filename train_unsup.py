@@ -49,9 +49,9 @@ args = parser.parse_args()
 
 ## Pipelines Setup
 model_dir = os.path.join(args.savedir,
-               'unsup_{}+{}_{}_epo{}_bs{}_aug{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_eps{}{}'.format(
-                    args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.lr, 
-                    args.mom, args.wd, args.gam1, args.gam2, args.eps, args.tail))
+               'unsup_{}+{}_{}_epo{}_bs{}_aug{}+{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_eps{}{}'.format(
+                    args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.transform,
+                    args.lr, args.mom, args.wd, args.gam1, args.gam2, args.eps, args.tail))
 utils.init_pipeline(model_dir)
 utils.save_params(model_dir, vars(args))
 
@@ -60,7 +60,7 @@ utils.save_params(model_dir, vars(args))
 def lr_schedule(epoch, optimizer):
     """decrease the learning rate"""
     lr = list(iter(optimizer.param_groups))[0]['lr']
-    if epoch == 5 or epoch == 8:
+    if epoch == 7 or epoch == 10:
         lr = lr * 0.1
         print(f'current learning rate: {lr}')
     for param_group in optimizer.param_groups:

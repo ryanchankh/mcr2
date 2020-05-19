@@ -57,15 +57,13 @@ utils.save_params(model_dir, vars(args))
 
 
 ## per model functions
-def adjust_learning_rate(optimizer, epoch):
+def lr_schedule(epoch, optimizer):
     """decrease the learning rate"""
     lr = args.lr
-    if epoch >= 100:
-        lr = args.lr * 0.1
-    if epoch >= 200:
+    if epoch >= 400:
         lr = args.lr * 0.01
-    if epoch >= 300:
-        lr = args.lr * 0.001
+    elif epoch >= 200:
+        lr = args.lr * 0.1
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
@@ -75,18 +73,17 @@ net = tf.load_architectures(args.arch, args.fd).cuda()
 transforms = tf.load_transforms(args.transform)
 trainset = tf.load_trainset(args.data, transforms)
 trainset = tf.corrupt_labels(trainset, args.lcr, args.lcs)
-trainloader = DataLoader(trainset, batch_size=args.bs, shuffle=True, drop_last=True, num_workers=4)
+trainloader = DataLoader(trainset, batch_size=args.bs, drop_last=True, num_workers=4)
 criterion = CompressibleLoss(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
 
 
 ## Training
 for epoch in range(args.epo):
-    adjust_learning_rate(optimizer, epoch)
+    lr_schedule(epoch, optimizer)
     for step, (batch_imgs, batch_lbls) in enumerate(trainloader):
         features = net(batch_imgs.cuda())
-        loss, loss_empi, loss_theo = criterion(features, batch_lbls, 
-                                               num_classes=len(trainset.classes))
+        loss, loss_empi, loss_theo = criterion(features, batch_lbls, num_classes=len(trainset.classes))
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
