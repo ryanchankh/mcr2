@@ -36,7 +36,7 @@ def load_architectures(name, dim):
         from architectures.resnet_cifar import ResNet18Old
         net = ResNet18Old(dim) 
     elif _name == "cnn":
-        from architectures.cnn_small import CNN
+        from architectures.cnn import CNN
         net = CNN(dim)
     else:
         raise NameError("{} not found in archiectures.".format(name))
