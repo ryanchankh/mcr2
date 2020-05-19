@@ -9,11 +9,10 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA, TruncatedSVD
 from torch.utils.data import DataLoader
 
-import utils
-import train_func as tf
-
-import matplotlib.font_manager as fm
+from generate import gen_testloss, gen_accuracy
 from loss import CompressibleLoss
+import train_func as tf
+import utils
 
 
 def plot_loss(args):
@@ -298,41 +297,7 @@ def plot_hist_paper(args, features, labels, epoch):
     print("Plot saved to: {}".format(file_name))
 
 
-def gen_testloss(args):
-    # load data and model
-    params = utils.load_params(args.model_dir)
-    ckpt_dir = os.path.join(args.model_dir, 'checkpoints')
-    ckpt_paths = [int(e[11:-3]) for e in os.listdir(ckpt_dir) if e[-3:] == ".pt"]
-    ckpt_paths = np.sort(ckpt_paths)
-    
-    # csv
-    csv_path = os.path.join(args.model_dir, 'losses_test.csv')
-    headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
-        "discrimn_loss_t",  "compress_loss_t"]
-    if os.path.exists(csv_path):
-        os.remove(csv_path)
-    with open(csv_path, 'w') as f:
-        f.write(','.join(map(str, headers)))
-    print('writing to:', csv_path)
-
-    test_transforms = tf.load_transforms('test')
-    testset = tf.load_trainset(params['data'], test_transforms, train=False)
-    testloader = DataLoader(testset, batch_size=params['bs'], shuffle=False, num_workers=4)
-    
-    # save loss
-    criterion = CompressibleLoss(gam1=params['gam1'], gam2=params['gam2'], eps=params['eps'])
-    for epoch, ckpt_path in enumerate(ckpt_paths):
-        net, epoch = tf.load_checkpoint(args.model_dir, epoch=epoch, eval_=True)
-        for step, (batch_imgs, batch_lbls) in enumerate(testloader):
-            features = net(batch_imgs.cuda())
-            loss, loss_empi, loss_theo = criterion(features, batch_lbls, 
-                                            num_classes=len(testset.classes))
-            utils.save_state(args.model_dir, epoch, step, loss.item(), 
-                *loss_empi, *loss_theo, filename='losses_test.csv')
-    print("Test loss computation complete.")
-
-
-def plot_traintest(args):
+def plot_traintest(args, path_test):
     def process_df(data):
         epochs = data['epoch'].ravel().max()
         mean_, max_, min_ = [], [], []
@@ -342,12 +307,9 @@ def plot_traintest(args):
             max_.append(row.max())
             min_.append(row.min())
         return pd.DataFrame(mean_), pd.DataFrame(max_), pd.DataFrame(min_)
-    train_file = os.path.join(args.model_dir, 'losses.csv')
-    test_file = os.path.join(args.model_dir, 'losses_test.csv')
-    assert os.path.exists(train_file), 'losses.csv not found'
-    assert os.path.exists(test_file), 'losses_test.csv not found'
-    df_train = pd.read_csv(train_file)
-    df_test = pd.read_csv(test_file)
+    path_train = os.path.join(args.model_dir, 'losses.csv')
+    df_train = pd.read_csv(path_train)
+    df_test = pd.read_csv(path_test)
     df_train_mean, df_train_max, df_train_min = process_df(df_train)
     df_test_mean, df_test_max, df_test_min = process_df(df_test)
     
@@ -490,6 +452,43 @@ def plot_pca_epoch(args):
     plt.close()
 
 
+def plot_accuracy(args, path):
+    df = pd.read_csv(path)
+    acc_train = df['acc_train'].ravel()
+    acc_test = df['acc_test'].ravel()
+    num_epochs = len(acc_train)
+
+    plt.rc('text', usetex=False)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman']
+    fig, ax = plt.subplots(1, 1, figsize=(7, 5), dpi=400)
+    ax.plot(np.arange(num_epochs), acc_train, label='training', alpha=0.6)
+    ax.plot(np.arange(num_epochs), acc_test, label='testing', alpha=0.6)
+    ax.legend(loc='lower right', frameon=True, fancybox=True, prop={"size": 8}, ncol=2, framealpha=0.5)
+    ax.set_xlabel("epochs")
+    ax.set_ylabel("accuracy")
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
+    ax.grid(True, color='white')
+    ax.set_facecolor('whitesmoke')
+    fig.tight_layout()
+
+    ## save
+    save_dir = os.path.join(args.model_dir, 'figures', 'acc')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    file_name = os.path.join(save_dir, f"acc_traintest.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(save_dir, f"acc_traintest.pdf")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    plt.close()
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Ploting')
     parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
@@ -499,8 +498,8 @@ if __name__ == "__main__":
     parser.add_argument('--hist_paper', help='plot histogram of cosine similarity of features', action='store_true')
     parser.add_argument('--pca', help='plot PCA singular values of feautres', action='store_true')
     parser.add_argument('--pca_epoch', help='plot PCA singular for different epochs', action='store_true')
+    parser.add_argument('--acc', help='plot accuracy over epochs', action='store_true')
     parser.add_argument('--traintest', help='plot train and test loss comparison plot', action='store_true')
-    parser.add_argument('--testloss', help='create test loss csv', action='store_true')
     parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
     parser.add_argument('--comp', type=int, default=30, help='number of components for PCA (default: 30)')
     parser.add_argument('--class_', type=int, default=None, help='which class for PCA (default: None)')
@@ -510,12 +509,20 @@ if __name__ == "__main__":
         plot_loss(args)
     if args.loss_paper:
         plot_loss_paper(args)
-    if args.testloss:
-        gen_testloss(args)
-    if args.traintest:
-        plot_traintest(args)
     if args.pca_epoch:
         plot_pca_epoch(args)
+
+    if args.traintest:
+        path = os.path.join(args.model_dir, 'losses_test.csv')
+        if not os.path.exists(path):
+            gen_test(args)
+        plot_traintest(args, path)
+    if args.acc:
+        path = os.path.join(args.model_dir, 'accuracy.csv')
+        if not os.path.exists(path):
+            gen_accuracy(args)
+        plot_accuracy(args, path)
+
 
     if args.pca or args.hist or args.hist_paper:
         ## load data and model
