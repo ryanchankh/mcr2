@@ -144,8 +144,11 @@ def test(epoch):
     }
     if not os.path.isdir('checkpoint_{}'.format(args.corruption)):
         os.mkdir('checkpoint_{}'.format(args.corruption))
-    torch.save(state, './checkpoint_{}/ckpt_{}.pth'.format(args.corruption, epoch))
-    best_acc = acc
+    if epoch % 50 == 0:
+        torch.save(state, './checkpoint_{}/ckpt_{}.pth'.format(args.corruption, epoch))
+    if acc > best_acc:
+        best_acc = acc
+    print('best_acc', best_acc)
 
 
 def lr_schedule(epoch, optimizer):
