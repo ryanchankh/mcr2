@@ -53,6 +53,12 @@ def load_trainset(name, transform=None, train=True):
     elif _name == "mnist":
         trainset = torchvision.datasets.MNIST(root="./data/mnist/", train=train, 
                                               download=True, transform=transform)
+    elif _name =="fashion_mnist":
+        trainset = torchvision.datasets.FashionMNIST(root="./data/fashion_mnist/", train=train, 
+                                              download=True, transform=transform) 
+    elif _name =="usps":
+        trainset = torchvision.datasets.USPS(root="./data/usps/", train=train, 
+                                              download=True, transform=transform) 
     else:
         raise NameError("{} not found in trainset loader".format(name))
     return trainset
@@ -62,12 +68,12 @@ def load_transforms(name):
     _name = name.lower()
     if _name == "default":
         transform = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
+            transforms.RandomCrop(32, padding=8),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor()])
     elif _name == "simclr":
         transform = transforms.Compose([
-            transforms.RandomResizedCrop(32),
+            transforms.RandomResizedCrop(28),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
@@ -88,6 +94,15 @@ def load_transforms(name):
                 transforms.RandomAffine(0, scale=(0.8, 1.1)),
                 transforms.RandomAffine(0, shear=(-20, 20))]), 
             transforms.ToTensor()])
+    elif _name == "mnist":
+         transform = transforms.Compose([
+            transforms.RandomChoice([
+                transforms.RandomAffine((-90, 90)),
+                transforms.RandomAffine(0, translate=(0.2, 0.4)),
+                transforms.RandomAffine(0, scale=(0.8, 1.1)),
+                transforms.RandomAffine(0, shear=(-20, 20))]), 
+            transforms.ToTensor()])
+ 
     elif _name == "test":
         transform = transforms.ToTensor()
     else:
