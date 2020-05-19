@@ -62,6 +62,11 @@ def load_transforms(name):
     _name = name.lower()
     if _name == "default":
         transform = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor()])
+    elif _name == "simclr":
+        transform = transforms.Compose([
             transforms.RandomResizedCrop(32),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
@@ -108,11 +113,14 @@ def load_checkpoint(model_dir, epoch=None, eval_=False):
     return net, epoch
 
     
-def get_features(net, trainloader):
+def get_features(net, trainloader, verbose=True):
     '''extract all features out into one single batch. '''
     features = []
     labels = []
-    train_bar = tqdm(trainloader, desc="extracting all features from dataset")
+    if verbose:
+        train_bar = tqdm(trainloader, desc="extracting all features from dataset")
+    else:
+        train_bar = trainloader
     for step, (batch_imgs, batch_lbls) in enumerate(train_bar):
         batch_features = net(batch_imgs.cuda())
         features.append(batch_features.cpu().detach())
