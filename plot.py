@@ -42,7 +42,7 @@ def plot_loss(args):
                 color='coral', linewidth=1.0, alpha=0.8)
     ax.set_ylabel('Loss', fontsize=10)
     ax.set_xlabel('Number of iterations', fontsize=10)
-    ax.legend(loc='upper left', prop={"size": 15}, framealpha=0.5)
+    ax.legend(loc='lower right', prop={"size": 15}, ncol=3, framealpha=0.5)
     ax.set_title("Theoretical Loss")
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -66,7 +66,7 @@ def plot_loss(args):
                 color='coral', linewidth=1.0, alpha=0.8)
     ax.set_ylabel('Loss', fontsize=10)
     ax.set_xlabel('Number of iterations', fontsize=10)
-    ax.legend(loc='best', prop={"size": 15}, framealpha=0.5)
+    ax.legend(loc='lower right', prop={"size": 15}, ncol=3, framealpha=0.5)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.set_title("Empirical Loss")
@@ -456,14 +456,14 @@ def plot_accuracy(args, path):
     df = pd.read_csv(path)
     acc_train = df['acc_train'].ravel()
     acc_test = df['acc_test'].ravel()
-    num_epochs = len(acc_train)
+    epochs = np.arange(len(df))
 
     plt.rc('text', usetex=False)
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = ['Times New Roman']
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), dpi=400)
-    ax.plot(np.arange(num_epochs), acc_train, label='training', alpha=0.6)
-    ax.plot(np.arange(num_epochs), acc_test, label='testing', alpha=0.6)
+    ax.plot(epochs, acc_train, label='training', alpha=0.6)
+    ax.plot(epochs, acc_test, label='testing', alpha=0.6)
     ax.legend(loc='lower right', frameon=True, fancybox=True, prop={"size": 8}, ncol=2, framealpha=0.5)
     ax.set_xlabel("epochs")
     ax.set_ylabel("accuracy")
@@ -488,6 +488,8 @@ def plot_accuracy(args, path):
     fig.savefig(file_name)
     print("Plot saved to: {}".format(file_name))
     plt.close()
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Ploting')

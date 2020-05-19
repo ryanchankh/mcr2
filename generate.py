@@ -56,6 +56,8 @@ def gen_accuracy(args):
     csv_path = utils.create_csv(args.model_dir, 'accuracy.csv', headers)
 
     for epoch, ckpt_paths in enumerate(ckpt_paths):
+        if epoch % 5 != 0:
+            continue
         net, epoch = tf.load_checkpoint(args.model_dir, epoch=epoch, eval_=True)
         # load data
         train_transforms = tf.load_transforms('test')
