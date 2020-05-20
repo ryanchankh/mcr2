@@ -63,8 +63,13 @@ def load_trainset(name, transform=None, train=True):
         trainset = torchvision.datasets.USPS(root="./data/usps/", train=train, 
                                              download=True, transform=transform) 
     elif _name == "svhn":
-        trainset = torchvision.datasets.SVHN(root="./data/svhn/", train=train, 
+        if train:
+            split_ = 'train'
+        else:
+            split_ = 'test'
+        trainset = torchvision.datasets.SVHN(root="./data/svhn/", split=split_, 
                                              download=True, transform=transform)
+        trainset.targets = trainset.labels
     else:
         raise NameError("{} not found in trainset loader".format(name))
     return trainset
@@ -107,6 +112,7 @@ def load_transforms(name):
                 transforms.RandomAffine(0, translate=(0.2, 0.4)),
                 transforms.RandomAffine(0, scale=(0.8, 1.1)),
                 transforms.RandomAffine(0, shear=(-20, 20))]), 
+                GaussianBlur(kernel_size=int(0.1 * 28)),
             transforms.ToTensor()])
     elif _name == "test":
         transform = transforms.ToTensor()
@@ -218,3 +224,26 @@ def membership_to_label(membership):
 
 def one_hot(x, K):
     return np.array(x[:, None] == np.arange(K)[None, :], dtype=int)
+
+
+
+## Additional Augmentations
+class GaussianBlur():
+    # Implements Gaussian blur as described in the SimCLR paper
+    def __init__(self, kernel_size, min=0.1, max=2.0):
+        self.min = min
+        self.max = max
+        # kernel size is set to be 10% of the image height/width
+        self.kernel_size = kernel_size
+
+    def __call__(self, sample):
+        sample = np.array(sample)
+
+        # blur the image with a 50% chance
+        prob = np.random.random_sample()
+
+        if prob < 0.5:
+            sigma = (self.max - self.min) * np.random.random_sample() + self.min
+            sample = cv2.GaussianBlur(sample, (self.kernel_size, self.kernel_size), sigma)
+
+        return sample
