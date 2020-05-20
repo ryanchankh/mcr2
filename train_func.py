@@ -48,20 +48,23 @@ def load_architectures(name, dim):
 def load_trainset(name, transform=None, train=True):
     _name = name.lower()
     if _name == "cifar10":
-        trainset = torchvision.datasets.CIFAR10(root='./data/cifar10/', train=train,
+        trainset = torchvision.datasets.CIFAR10(root="./data/cifar10/", train=train,
                                                 download=True, transform=transform)
     elif _name == "cifar100":
-        trainset = torchvision.datasets.CIFAR100(root='./data/cifar100/', train=train,
+        trainset = torchvision.datasets.CIFAR100(root="./data/cifar100/", train=train,
                                                  download=True, transform=transform)
     elif _name == "mnist":
         trainset = torchvision.datasets.MNIST(root="./data/mnist/", train=train, 
                                               download=True, transform=transform)
-    elif _name =="fashionmnist":
+    elif _name == "fashionmnist":
         trainset = torchvision.datasets.FashionMNIST(root="./data/fashion_mnist/", train=train, 
                                               download=True, transform=transform) 
-    elif _name =="usps":
+    elif _name == "usps":
         trainset = torchvision.datasets.USPS(root="./data/usps/", train=train, 
-                                              download=True, transform=transform) 
+                                             download=True, transform=transform) 
+    elif _name == "svhn":
+        trainset = torchvision.datasets.SVHN(root="./data/svhn/", train=train, 
+                                             download=True, transform=transform)
     else:
         raise NameError("{} not found in trainset loader".format(name))
     return trainset
