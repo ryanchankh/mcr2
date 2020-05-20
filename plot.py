@@ -229,6 +229,56 @@ def plot_hist(args, features, labels, epoch):
             print("Plot saved to: {}".format(file_name))
 
 
+def plot_hist_all(args, features, labels, epoch):
+    ## create save folder
+    hist_folder = os.path.join(args.model_dir, 'figures', 'hist_all')
+    if not os.path.exists(hist_folder):
+        os.makedirs(hist_folder)
+
+    num_classes = len(trainset.classes)
+    features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
+                            num_classes=num_classes, stack=False)
+
+    plt.rc('text', usetex=False)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman'] 
+    fig, ax = plt.subplots(ncols=10, nrows=10, figsize=(10, 10), dpi=250, sharex=True, sharey=True)
+    for j in range(10):
+        for i in range(10):
+            sim_mat = features_sort[i] @ features_sort[j].T
+            if i == j:
+                sim_mat = sim_mat[np.triu_indices(sim_mat.shape[0], k=1)]
+                h1 = ax[i, j].hist(sim_mat, bins=np.arange(2)-0.05, color='green', alpha=0.3, histtype='bar', density=True)
+            else:
+                sim_mat = sim_mat.reshape(-1)
+                h2 = ax[i, j].hist(sim_mat, bins=np.arange(2)-0.05, color='red', alpha=0.3, histtype='bar', density=True)
+            ax[i, j].spines['right'].set_visible(False)
+            ax[i, j].spines['top'].set_visible(False)
+            ax[i, j].spines['bottom'].set_visible(False)
+            ax[i, j].spines['left'].set_visible(False) 
+            
+            ax[i, j].grid(True, color='white', axis='y')
+            ax[i, j].set_xlim(0, 1.)
+            ax[i, j].set_facecolor('whitesmoke')
+            
+            if i == 0:
+                ax[i, j].set_title(f'class {j}')
+            if j == 0:
+                ax[i, j].set_ylabel(f'class {i}')
+    fig.text(0.5, -0.01, 'cosine similarity', ha='center')
+    fig.text(-0.01, 0.5, 'count', va='center', rotation='vertical')
+    plt.tight_layout()
+    plt.show()
+
+    file_name = os.path.join(hist_folder, f"hist_all_epoch{epoch}.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(hist_folder, f"hist_all_epoch{epoch}.pdf")
+    fig.savefig(file_name)
+    plt.close()
+    print("Plot saved to: {}".format(file_name))
+
+
 def plot_hist_paper(args, features, labels, epoch):
     ## create save folder
     hist_folder = os.path.join(args.model_dir, 'figures', 'hist_paper')
@@ -497,6 +547,7 @@ if __name__ == "__main__":
     parser.add_argument('--loss', help='plot losses from training', action='store_true')
     parser.add_argument('--loss_paper', help='plot losses from training', action='store_true')
     parser.add_argument('--hist', help='plot histogram of cosine similarity of features', action='store_true')
+    parser.add_argument('--hist_all', help='plot histogram of cosine similarity of features for all classes', action='store_true')
     parser.add_argument('--hist_paper', help='plot histogram of cosine similarity of features', action='store_true')
     parser.add_argument('--pca', help='plot PCA singular values of feautres', action='store_true')
     parser.add_argument('--pca_epoch', help='plot PCA singular for different epochs', action='store_true')
@@ -526,7 +577,7 @@ if __name__ == "__main__":
         plot_accuracy(args, path)
 
 
-    if args.pca or args.hist or args.hist_paper:
+    if args.pca or args.hist or args.hist_all or args.hist_paper:
         ## load data and model
         params = utils.load_params(args.model_dir)
         net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
@@ -541,5 +592,7 @@ if __name__ == "__main__":
         plot_pca(args, features, labels, epoch)
     if args.hist:
         plot_hist(args, features, labels, epoch)
+    if args.hist_all:
+        plot_hist_all(args, features, labels, epoch)
     if args.hist_paper:
         plot_hist_paper(args, features, labels, epoch)
