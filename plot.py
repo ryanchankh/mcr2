@@ -248,10 +248,10 @@ def plot_hist_all(args, features, labels, epoch):
             sim_mat = features_sort[i] @ features_sort[j].T
             if i == j:
                 sim_mat = sim_mat[np.triu_indices(sim_mat.shape[0], k=1)]
-                h1 = ax[i, j].hist(sim_mat, bins=np.arange(2)-0.05, color='green', alpha=0.3, histtype='bar', density=True)
+                h1 = ax[i, j].hist(sim_mat, bins=np.arange(10)-0.05, color='green', alpha=0.3, histtype='bar', density=True)
             else:
                 sim_mat = sim_mat.reshape(-1)
-                h2 = ax[i, j].hist(sim_mat, bins=np.arange(2)-0.05, color='red', alpha=0.3, histtype='bar', density=True)
+                h2 = ax[i, j].hist(sim_mat, bins=np.arange(10)-0.05, color='red', alpha=0.3, histtype='bar', density=True)
             ax[i, j].spines['right'].set_visible(False)
             ax[i, j].spines['top'].set_visible(False)
             ax[i, j].spines['bottom'].set_visible(False)
