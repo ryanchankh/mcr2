@@ -50,7 +50,6 @@ class AugmentLoader:
         self.sampler = sampler
         self.num_aug = num_aug
         self.shuffle = shuffle
-        self.size = len(self.dataset.targets)
     
     def __iter__(self):
         if self.sampler == "balance":
@@ -58,10 +57,9 @@ class AugmentLoader:
             num_img = self.batch_size // (self.num_aug+1)
             return _Iter(self, sampler, num_img, self.num_aug)
         elif self.sampler == "random":
-            sampler = RandomSampler(self.dataset, self.shuffle)
+            size = len(self.dataset.targets) // self.batch_size * self.batch_size
+            sampler = RandomSampler(self.dataset, size, shuffle=self.shuffle)
             num_img = self.batch_size // (self.num_aug+1)
-            assert self.batch_size // (self.num_aug+1) * (self.num_aug+1) == self.batch_size
-            assert self.size // num_img * num_img == self.size
             return _Iter(self, sampler, num_img, self.num_aug)
         else:
             raise NameError(f"sampler {self.sampler} not found.")
@@ -80,12 +78,12 @@ class AugmentLoader:
     
 
 class _Iter():
-    def __init__(self, loader, sampler, num_img, num_aug):
+    def __init__(self, loader, sampler, num_img, num_aug, size=None):
         self.loader = loader
         self.sampler = sampler
         self.num_img = num_img
         self.num_aug = num_aug
-
+        self.size = size
 
     def __next__(self):
         if self.sampler.stop():
@@ -150,16 +148,16 @@ class BalanceSampler():
 
 
 class RandomSampler():
-    def __init__(self, dataset, shuffle=False):
+    def __init__(self, dataset, size, shuffle=False):
         self.dataset = dataset
-        self.size = len(dataset.targets)
+        self.size = size
         self.shuffle = shuffle
         self.num_sampled = 0
         self.sample_indices = self.reset_index()
 
     def reset_index(self):
         if self.shuffle:
-            return np.random.choice(self.size, self.size, replace=False).tolist()
+            return np.random.choice(len(self.dataset.targets), self.size, replace=False).tolist()
         else:
             return np.arange(self.size).tolist()
         
