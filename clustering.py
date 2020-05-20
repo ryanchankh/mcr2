@@ -22,6 +22,7 @@ from scipy.optimize import linear_sum_assignment
 import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.svm import LinearSVC
+from sklearn.cluster import KMeans
 
 import utils
 import train_func as tf
@@ -626,6 +627,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate pseudolabels from clustering')
     parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
     parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
+    parser.add_argument('--esnc', action='store_true', help='use elastic net subspace for clustering')
+    parser.add_argument('--kmeans', action='store_true', help='use kmeans for clustering')
+
     parser.add_argument('--n', type=int, default=10, help='number of clusters for cluster (default: 10)')
     parser.add_argument('--gam', type=int, default=100, 
                         help='gamma paramter for subspace clustering (default: 100)')
@@ -645,10 +649,15 @@ if __name__ == '__main__':
     trainloader = DataLoader(trainset, batch_size=500, shuffle=False, num_workers=4)
     features, labels = tf.get_features(net, trainloader)
 
-    clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, algorithm='spams', 
-                    gamma=args.gam, tau=args.tau)
-    clustermd.fit(features)
-    plabels = clustermd.labels_
+    if args.kmeans:
+        clustermd = KMeans(n_clusters=args.n)
+        clustermd.fit(features)
+        plabels = clustermd.labels_
+    else:
+        clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, algorithm='spams', 
+                        gamma=args.gam, tau=args.tau)
+        clustermd.fit(features)
+        plabels = clustermd.labels_
     clus_acc = clustering_accuracy(labels, plabels)
     np.save(path, plabels)
     print('clustering accuracy:', clus_acc)
