@@ -622,6 +622,23 @@ def clustering_accuracy(labels_true, labels_pred):
     return value[r, c].sum() / len(labels_true)
 
 
+def kmeans(args, train_features, train_labels, test_features=None, test_labels=None):
+    clustermd = KMeans(n_clusters=args.n)
+    clustermd.fit(train_features)
+    plabels = clustermd.labels_
+    acc = clustering_accuracy(train_labels, plabels)
+    print('KMeans: {}'.format(acc))
+
+
+def ensc(args, train_features, train_labels, test_features=None, test_labels=None):
+    clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, algorithm='spams', 
+                gamma=args.gam, tau=args.tau)
+    clustermd.fit(train_features)
+    plabels = clustermd.labels_
+    acc = clustering_accuracy(train_labels, plabels)
+    print('ENSC: {}'.format(acc))
+
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate pseudolabels from clustering')
@@ -640,8 +657,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    path = os.path.join(f"./plabels", f'n{args.n}_gam{args.gam}_tau{args.tau}{args.tail}.npy')
-    print("plabels path:", path)
+    # path = os.path.join(f"./plabels", f'n{args.n}_gam{args.gam}_tau{args.tau}{args.tail}.npy')
+    # print("plabels path:", path)
     params = utils.load_params(args.model_dir)
     net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
     train_transforms = tf.load_transforms('test')
@@ -650,14 +667,6 @@ if __name__ == '__main__':
     features, labels = tf.get_features(net, trainloader)
 
     if args.kmeans:
-        clustermd = KMeans(n_clusters=args.n)
-        clustermd.fit(features)
-        plabels = clustermd.labels_
+        kmeans(args, features, labels)
     else:
-        clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, algorithm='spams', 
-                        gamma=args.gam, tau=args.tau)
-        clustermd.fit(features)
-        plabels = clustermd.labels_
-    clus_acc = clustering_accuracy(labels, plabels)
-    np.save(path, plabels)
-    print('clustering accuracy:', clus_acc)
+        ensc(args, featurs, labels)
