@@ -71,6 +71,7 @@ def load_trainset(name, transform=None, train=True):
         trainset = torchvision.datasets.SVHN(root="./data/svhn/", split=split_, 
                                              download=True, transform=transform)
         trainset.targets = trainset.labels
+        trainset.classes = np.arange(10)
     else:
         raise NameError("{} not found in trainset loader".format(name))
     return trainset

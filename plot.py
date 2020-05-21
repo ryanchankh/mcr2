@@ -154,12 +154,13 @@ def plot_pca(args, features, labels, epoch):
         os.makedirs(pca_dir)
 
     ## perform PCA on features
+    n_comp = np.min(args.comp, features.shape[1])
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=len(trainset.classes), stack=False)
-    pca = PCA(n_components=args.comp).fit(features.numpy())
+    pca = PCA(n_components=n_comp).fit(features.numpy())
     sig_vals = [pca.singular_values_]
     for c in range(len(trainset.classes)): 
-        pca = PCA(n_components=args.comp).fit(features_sort[c])
+        pca = PCA(n_components=n_comp).fit(features_sort[c])
         sig_vals.append((pca.singular_values_))
 
     ## plot features
@@ -456,7 +457,8 @@ def plot_pca_epoch(args):
             features_ = features_sort[args.class_]
         else:
             features_ = features.numpy()
-        pca = PCA(n_components=args.comp).fit(features_)
+        n_comp = np.min(args.comp, features.shape[1])
+        pca = PCA(n_components=n_comp).fit(features_)
         sig_vals.append(pca.singular_values_)
 
     ## plot singular values
