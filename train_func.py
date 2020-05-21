@@ -1,6 +1,7 @@
 import os
 from tqdm import tqdm
 
+import cv2
 import numpy as np
 import torch
 import torch.nn
@@ -112,7 +113,7 @@ def load_transforms(name):
                 transforms.RandomAffine(0, translate=(0.2, 0.4)),
                 transforms.RandomAffine(0, scale=(0.8, 1.1)),
                 transforms.RandomAffine(0, shear=(-20, 20))]), 
-                GaussianBlur(kernel_size=int(0.1 * 28)),
+                GaussianBlur(kernel_size=3),
             transforms.ToTensor()])
     elif _name == "test":
         transform = transforms.ToTensor()
