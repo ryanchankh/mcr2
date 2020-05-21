@@ -11,6 +11,7 @@ from sklearn.decomposition import TruncatedSVD
 
 import utils
 import train_func as tf
+from cluster import kmeans, ensc
 
 
 def svm(args, train_features, train_labels, test_features, test_labels):
@@ -66,6 +67,8 @@ if __name__ == '__main__':
     parser.add_argument('--svm', help='evaluate using SVM', action='store_true')
     parser.add_argument('--knn', help='evaluate using kNN measuring cosine similarity', action='store_true')
     parser.add_argument('--nearsub', help='evaluate using Nearest Subspace', action='store_true')
+    parser.add_argument('--kmeans', help='evaluate using KMeans', action='store_true')
+    parser.add_argument('--ensc', help='evaluate using Elastic Net Subspace Clustering', action='store_true')
     parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
 
     parser.add_argument('--k', type=int, default=5, help='top k components for kNN')
@@ -95,3 +98,8 @@ if __name__ == '__main__':
         knn(args, train_features, train_labels, test_features, test_labels)
     if args.nearsub:
         nearsub(args, train_features, train_labels, test_features, test_labels)
+    if args.kmeans:
+        kmeans(args, train_features, train_labels)
+    if args.ensc:
+        ensc(args, train_features, train_labels)
+    
