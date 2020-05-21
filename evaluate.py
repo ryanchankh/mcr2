@@ -72,6 +72,11 @@ if __name__ == '__main__':
     parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
 
     parser.add_argument('--k', type=int, default=5, help='top k components for kNN')
+    parser.add_argument('--n', type=int, default=10, help='number of clusters for cluster (default: 10)')
+    parser.add_argument('--gam', type=int, default=300, 
+                        help='gamma paramter for subspace clustering (default: 100)')
+    parser.add_argument('--tau', type=float, default=1.0,
+                        help='tau paramter for subspace clustering (default: 1.0)')
     parser.add_argument('--n_comp', type=int, default=30, help='number of components for PCA (default: 30)')
     args = parser.parse_args()
 
