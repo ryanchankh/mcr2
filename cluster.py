@@ -623,11 +623,15 @@ def clustering_accuracy(labels_true, labels_pred):
 
 
 def kmeans(args, train_features, train_labels, test_features=None, test_labels=None):
-    clustermd = KMeans(n_clusters=args.n)
+    clustermd = KMeans(n_clusters=args.n, random_state=10)
     clustermd.fit(train_features)
     plabels = clustermd.labels_
     acc = clustering_accuracy(train_labels, plabels)
     print('KMeans: {}'.format(acc))
+
+    if args.save:
+        np.save(os.path.join(args.model_dir, 'plabels', f'kmeans_epoch{args.epoch}.npy'), plabels)
+    return acc, plabels
 
 
 def ensc(args, train_features, train_labels, test_features=None, test_labels=None):
@@ -638,6 +642,9 @@ def ensc(args, train_features, train_labels, test_features=None, test_labels=Non
     acc = clustering_accuracy(train_labels, plabels)
     print('ENSC: {}'.format(acc))
 
+    if args.save:
+        np.save(os.path.join(args.model_dir, 'plabels', f'ensc_epoch{args.epoch}.npy'), plabels)
+    return acc, plabels
 
 
 if __name__ == '__main__':
@@ -647,6 +654,7 @@ if __name__ == '__main__':
     parser.add_argument('--esnc', action='store_true', help='use elastic net subspace for clustering')
     parser.add_argument('--kmeans', action='store_true', help='use kmeans for clustering')
 
+    parser.add_argument('--save', action='store_true', help='save labels')
     parser.add_argument('--n', type=int, default=10, help='number of clusters for cluster (default: 10)')
     parser.add_argument('--gam', type=int, default=100, 
                         help='gamma paramter for subspace clustering (default: 100)')
@@ -665,8 +673,11 @@ if __name__ == '__main__':
     trainset = tf.load_trainset(params['data'], train_transforms, train=True)
     trainloader = DataLoader(trainset, batch_size=500, shuffle=False, num_workers=4)
     features, labels = tf.get_features(net, trainloader)
+    args.epoch = epoch
 
     if args.kmeans:
         kmeans(args, features, labels)
     else:
         ensc(args, featurs, labels)
+
+    

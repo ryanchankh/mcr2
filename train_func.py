@@ -9,7 +9,7 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-from clustering import ElasticNetSubspaceClustering, clustering_accuracy
+from cluster import ElasticNetSubspaceClustering, clustering_accuracy
 import utils
 
 
@@ -39,6 +39,9 @@ def load_architectures(name, dim):
     elif _name == "cnn":
         from architectures.cnn import CNN
         net = CNN(dim)
+    elif _name =="cnn2":
+        from architectures.cnn import CNN2
+        net = CNN2(dim)
     else:
         raise NameError("{} not found in archiectures.".format(name))
     
