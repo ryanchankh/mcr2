@@ -78,6 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('--tau', type=float, default=1.0,
                         help='tau paramter for subspace clustering (default: 1.0)')
     parser.add_argument('--n_comp', type=int, default=30, help='number of components for PCA (default: 30)')
+    parser.add_argument('--save', action='store_true', help='save labels')
     args = parser.parse_args()
 
     ## load model, train data, and test data
