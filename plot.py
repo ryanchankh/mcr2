@@ -542,6 +542,42 @@ def plot_accuracy(args, path):
     plt.close()
 
 
+def plot_heatmap(args, features, labels, epoch):
+    num_classes = len(trainset.classes)
+    features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
+                            num_classes=num_classes, stack=False)
+    features_sort_ = np.vstack(features_sort)
+    sim_mat = np.abs(features_sort_ @ features_sort_.T)
+
+    plt.rc('text', usetex=False)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
+
+    fig, ax = plt.subplots(figsize=(7, 5), sharey=True, sharex=True, dpi=400)
+    im = ax.imshow(sim_mat, cmap='Blues')
+    fig.colorbar(im, pad=0.02, drawedges=0, ticks=[0, 0.5, 1])
+    ax.set_xticks(np.linspace(0, 50000, 6))
+    ax.set_yticks(np.linspace(0, 50000, 6))
+    # ax.spines['right'].set_visible(False)
+    # ax.spines['top'].set_visible(False)
+    # ax.spines['bottom'].set_visible(False)
+    # ax.spines['left'].set_visible(False)
+    [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+    fig.tight_layout()
+
+    save_dir = os.path.join(args.model_dir, 'figures', 'heatmaps')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    file_name = os.path.join(save_dir, f"heatmat_epoch{epoch}.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(save_dir, f"heatmat_epoch{epoch}.pdf")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    plt.close()
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Ploting')
@@ -555,7 +591,9 @@ if __name__ == "__main__":
     parser.add_argument('--pca_epoch', help='plot PCA singular for different epochs', action='store_true')
     parser.add_argument('--acc', help='plot accuracy over epochs', action='store_true')
     parser.add_argument('--traintest', help='plot train and test loss comparison plot', action='store_true')
+    parser.add_argument('--heat', help='plot heatmap of cosine similarity between samples', action='store_true')
     parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
+    parser.add_argument('--n', type=int, default=1000, help='number of samples')
     parser.add_argument('--comp', type=int, default=30, help='number of components for PCA (default: 30)')
     parser.add_argument('--class_', type=int, default=None, help='which class for PCA (default: None)')
     args = parser.parse_args()
@@ -579,7 +617,7 @@ if __name__ == "__main__":
         plot_accuracy(args, path)
 
 
-    if args.pca or args.hist or args.hist_all or args.hist_paper:
+    if args.pca or args.hist or args.hist_all or args.hist_paper or args.heat:
         ## load data and model
         params = utils.load_params(args.model_dir)
         net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
@@ -598,3 +636,5 @@ if __name__ == "__main__":
         plot_hist_all(args, features, labels, epoch)
     if args.hist_paper:
         plot_hist_paper(args, features, labels, epoch)
+    if args.heat:
+        plot_heatmap(args, features, labels, epoch)
