@@ -137,7 +137,6 @@ def load_checkpoint(model_dir, epoch=None, eval_=False):
     state_dict = torch.load(ckpt_path)
     net = load_architectures(params['arch'], params['fd'])
     net.load_state_dict(state_dict)
-    # net = torch.nn.DataParallel(net)
     del state_dict
     if eval_:
         net.eval()
