@@ -20,15 +20,16 @@ def sort_dataset(data, labels, num_classes=10, stack=False):
     return sorted_data, sorted_labels
 
 
-def init_pipeline(model_dir):
+def init_pipeline(model_dir, headers=None):
     """Initialize folder and csv logger. """
     # project folder
     os.makedirs(model_dir)
     os.makedirs(os.path.join(model_dir, 'checkpoints'))
     os.makedirs(os.path.join(model_dir, 'figures'))
     os.makedirs(os.path.join(model_dir, 'plabels'))
-    headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
-        "discrimn_loss_t",  "compress_loss_t"]
+    if not headers:
+        headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
+            "discrimn_loss_t",  "compress_loss_t"]
     create_csv(model_dir, 'losses.csv', headers)
 
     print("project dir: {}".format(model_dir))

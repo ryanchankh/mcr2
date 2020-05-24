@@ -6,7 +6,7 @@ from torch.optim import SGD
 
 import train_func as tf
 from augmentloader import AugmentLoader
-from loss import CompressibleLoss
+from loss import CompressibleLoss2
 import utils
 
 
@@ -36,6 +36,8 @@ parser.add_argument('--gam1', type=float, default=1.0,
                     help='gamma1 for tuning empirical loss (default: 1.0)')
 parser.add_argument('--gam2', type=float, default=10,
                     help='gamma2 for tuning empirical loss (default: 10)')
+parser.add_argument('--gam3', type=float, default=10,
+                    help='gamma3 for tuning empirical loss (default: 10)')
 parser.add_argument('--eps', type=float, default=2,
                     help='eps squared (default: 2)')
 parser.add_argument('--tail', type=str, default='',
@@ -54,12 +56,13 @@ args = parser.parse_args()
 
 
 ## Pipelines Setup
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 model_dir = os.path.join(args.savedir,
-               'selfsup_{}+{}_{}_epo{}_bs{}_aug{}_nc{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_eps{}{}'.format(
+               'selfsup_{}+{}_{}_epo{}_bs{}_aug{}_nc{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_gam3{}_eps{}{}'.format(
                     args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.nc, args.lr, 
-                    args.mom, args.wd, args.gam1, args.gam2, args.eps, args.tail))
-utils.init_pipeline(model_dir)
+                    args.mom, args.wd, args.gam1, args.gam2, args.gam3, args.eps, args.tail))
+headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
+            "discrimn_loss_t",  "compress_loss_t", "compress_loss_ortho"]
+utils.init_pipeline(model_dir, headers=headers)
 utils.save_params(model_dir, vars(args))
 
 
@@ -93,22 +96,24 @@ trainloader = AugmentLoader(trainset,
                             sampler=args.sampler,
                             batch_size=args.bs,
                             num_aug=args.aug)
-criterion = CompressibleLoss(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
+criterion = CompressibleLoss2(gam1=args.gam1, gam2=args.gam2, gam3=args.gam3, eps=args.eps, num_aug=args.aug)
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
 
 
 ## Training
 for epoch in range(args.epo):
     # lr_schedule(epoch, optimizer)
-    plabels_schedule(epoch, net, args.data, trainloader, n_clusters=args.nc)
+    # plabels_schedule(epoch, net, args.data, trainloader, n_clusters=args.nc)
     for step, (batch_imgs, batch_lbls, batch_idx) in enumerate(trainloader):
         batch_features = net(batch_imgs.cuda())
-        loss, loss_empi, loss_theo = criterion(batch_features, batch_lbls)
+        loss, loss_empi, loss_theo, loss_ortho = criterion(batch_features, batch_idx)
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        utils.save_state(model_dir, epoch, step, loss.item(), *loss_empi, *loss_theo)
+        if step % 10:
+            utils.save_ckpt(model_dir, net, epoch)
+        utils.save_state(model_dir, epoch, step, loss.item(), *loss_empi, *loss_theo, loss_ortho)
     utils.save_ckpt(model_dir, net, epoch)
 print("training complete.")
