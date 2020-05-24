@@ -2,7 +2,7 @@ import argparse
 import os
 
 import numpy as np
-from torch.optim import SGD
+from torch.optim import SGD, Adam
 
 import train_func as tf
 from augmentloader import AugmentLoader
@@ -57,10 +57,19 @@ utils.save_params(model_dir, vars(args))
 
 
 ## per model functions
-def lr_schedule(epoch, optimizer):
+def lr_schedule2(epoch, optimizer):
     """decrease the learning rate"""
     lr = list(iter(optimizer.param_groups))[0]['lr']
     if epoch == 7 or epoch == 10:
+        lr = lr * 0.1
+        print(f'current learning rate: {lr}')
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
+def lr_schedule(epoch, optimizer):
+    """decrease the learning rate"""
+    lr = list(iter(optimizer.param_groups))[0]['lr']
+    if epoch == 20 or epoch == 40:
         lr = lr * 0.1
         print(f'current learning rate: {lr}')
     for param_group in optimizer.param_groups:
@@ -77,7 +86,8 @@ trainloader = AugmentLoader(trainset,
                             batch_size=args.bs,
                             num_aug=args.aug)
 criterion = CompressibleLoss(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
-optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
+# optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
+optimizer = Adam(net.parameters(), lr=args.lr, weight_decay=args.wd)
 
 
 ## Training
@@ -91,5 +101,7 @@ for epoch in range(args.epo):
         optimizer.step()
 
         utils.save_state(model_dir, epoch, step, loss.item(), *loss_empi, *loss_theo)
+        if step % 10 == 0:
+            utils.save_ckpt(model_dir, net, epoch)
     utils.save_ckpt(model_dir, net, epoch)
 print("training complete.")

@@ -57,8 +57,8 @@ args = parser.parse_args()
 
 ## Pipelines Setup
 model_dir = os.path.join(args.savedir,
-               'selfsup_{}+{}_{}_epo{}_bs{}_aug{}_nc{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_gam3{}_eps{}{}'.format(
-                    args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.nc, args.lr, 
+               'selfsup_{}+{}_{}_epo{}_bs{}_aug{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_gam3{}_eps{}{}'.format(
+                    args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.lr, 
                     args.mom, args.wd, args.gam1, args.gam2, args.gam3, args.eps, args.tail))
 headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
             "discrimn_loss_t",  "compress_loss_t", "compress_loss_ortho"]
