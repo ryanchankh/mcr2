@@ -95,7 +95,7 @@ class _Iter():
         for i in range(self.num_img):
             img_augments = self.loader.apply_augments(sampled_imgs[i])
             batch_imgs.append(img_augments)
-            batch_lbls.append(np.repeat(sampled_lbls[i], self.num_aug+1))
+            batch_lbls.append(np.repeat(sampled_lbls[i], self.num_aug))
             batch_idx.append(np.repeat(i, self.num_aug))
         batch_imgs = torch.cat(batch_imgs, axis=0).float()
         batch_lbls = torch.from_numpy(np.hstack(batch_lbls))
