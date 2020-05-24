@@ -108,8 +108,7 @@ class CompressibleLoss2(torch.nn.Module):
         """Empirical Compressive Loss (ortho)."""
         p, m = W.shape
         I = torch.eye(p).cuda()
-        num_aug = self.num_aug + 1
-        num_imgs = len(y) // num_aug
+        num_imgs = len(y) // self.num_aug
         pair_combs = np.array(list(combinations(range(num_imgs), 2)))
         num_pairs = int(1.0 * (num_imgs * (num_imgs + 1)) / 2.0)
         sample_idx = np.random.choice(len(pair_combs), num_pairs)
@@ -117,8 +116,8 @@ class CompressibleLoss2(torch.nn.Module):
         compress_loss_ortho = 0.
         for step, (i, j) in enumerate(sample_pairs):
             Pi = np.zeros(len(y))
-            Pi[i * num_aug:(i + 1) * num_aug] = 1.
-            Pi[j * num_aug:(j + 1) * num_aug] = 1.
+            Pi[i * self.num_aug:(i + 1) * self.num_aug] = 1.
+            Pi[j * self.num_aug:(j + 1) * self.num_aug] = 1.
             Pi = np.diag(Pi)
             Pi = torch.tensor(Pi, dtype=torch.float32).cuda()
             trPi = torch.trace(Pi) + 1e-8

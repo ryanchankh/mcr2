@@ -54,12 +54,12 @@ class AugmentLoader:
     def __iter__(self):
         if self.sampler == "balance":
             sampler = BalanceSampler(self.dataset)
-            num_img = self.batch_size // (self.num_aug+1)
+            num_img = self.batch_size // self.num_aug
             return _Iter(self, sampler, num_img, self.num_aug)
         elif self.sampler == "random":
             size = len(self.dataset.targets) // self.batch_size * self.batch_size
             sampler = RandomSampler(self.dataset, size, shuffle=self.shuffle)
-            num_img = self.batch_size // (self.num_aug+1)
+            num_img = self.batch_size // self.num_aug
             return _Iter(self, sampler, num_img, self.num_aug)
         else:
             raise NameError(f"sampler {self.sampler} not found.")
@@ -96,7 +96,7 @@ class _Iter():
             img_augments = self.loader.apply_augments(sampled_imgs[i])
             batch_imgs.append(img_augments)
             batch_lbls.append(np.repeat(sampled_lbls[i], self.num_aug+1))
-            batch_idx.append(np.repeat(i, self.num_aug+1))
+            batch_idx.append(np.repeat(i, self.num_aug))
         batch_imgs = torch.cat(batch_imgs, axis=0).float()
         batch_lbls = torch.from_numpy(np.hstack(batch_lbls))
         batch_idx = torch.from_numpy(np.hstack(batch_idx))
