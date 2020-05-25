@@ -29,6 +29,7 @@ def plot_loss(args):
     com_loss_e = data['compress_loss_e'].ravel()
     dis_loss_t = data['discrimn_loss_t'].ravel()
     com_loss_t = data['compress_loss_t'].ravel()
+    com_loss_o = data['compress_loss_ortho'].ravel()
     obj_loss_t = dis_loss_t - com_loss_t
 
     ## Theoretical Loss
@@ -64,6 +65,9 @@ def plot_loss(args):
                 color='royalblue', linewidth=1.0, alpha=0.8)
     ax.plot(num_iter, com_loss_e, label=r'$\widehat{\mathcal{L}^c}$', 
                 color='coral', linewidth=1.0, alpha=0.8)
+    if len(com_loss_o) != 0:
+        ax.plot(num_iter, com_loss_o, label=r'ortho', 
+            color='black', linewidth=1.0, alpha=0.8)
     ax.set_ylabel('Loss', fontsize=10)
     ax.set_xlabel('Number of iterations', fontsize=10)
     ax.legend(loc='lower right', prop={"size": 15}, ncol=3, framealpha=0.5)

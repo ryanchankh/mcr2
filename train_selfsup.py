@@ -6,7 +6,7 @@ from torch.optim import SGD
 
 import train_func as tf
 from augmentloader import AugmentLoader
-from loss import CompressibleLoss2
+from loss import *
 import utils
 
 
@@ -96,7 +96,7 @@ trainloader = AugmentLoader(trainset,
                             sampler=args.sampler,
                             batch_size=args.bs,
                             num_aug=args.aug)
-criterion = CompressibleLoss2(gam1=args.gam1, gam2=args.gam2, gam3=args.gam3, eps=args.eps, num_aug=args.aug)
+criterion = CompressibleLoss3(gam1=args.gam1, gam2=args.gam2, gam3=args.gam3, eps=args.eps, num_aug=args.aug)
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
 
 
@@ -112,7 +112,7 @@ for epoch in range(args.epo):
         loss.backward()
         optimizer.step()
 
-        if step % 10:
+        if step % 30 == 0:
             utils.save_ckpt(model_dir, net, epoch)
         utils.save_state(model_dir, epoch, step, loss.item(), *loss_empi, *loss_theo, loss_ortho)
     utils.save_ckpt(model_dir, net, epoch)
