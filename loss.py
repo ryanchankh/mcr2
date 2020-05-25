@@ -167,7 +167,7 @@ class CompressibleLoss2(torch.nn.Module):
 
 class CompressibleLoss3(torch.nn.Module):
     def __init__(self, gam1=1.0, gam2=1.0, gam3=0.01, eps=0.01, num_aug=10):
-        super(CompressibleLoss2, self).__init__()
+        super(CompressibleLoss3, self).__init__()
         self.gam1 = gam1
         self.gam2 = gam2
         self.gam3 = gam3
@@ -278,7 +278,7 @@ class CompressibleLoss3(torch.nn.Module):
 
 class CompressibleLoss4(torch.nn.Module):
     def __init__(self, gam1=1.0, gam2=1.0, gam3=0.01, eps=0.01, num_aug=10):
-        super(CompressibleLoss2, self).__init__()
+        super(CompressibleLoss4, self).__init__()
         self.gam1 = gam1
         self.gam2 = gam2
         self.gam3 = gam3
