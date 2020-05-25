@@ -46,7 +46,9 @@ def load_architectures(name, dim):
         raise NameError("{} not found in archiectures.".format(name))
     
     # return net.cuda()
-    return torch.nn.DataParallel(net).cuda()
+    # net = torch.nn.DataParallel(net.cuda())
+    net = torch.nn.DataParallel(net).cuda()
+    return net
 
 
 def load_trainset(name, transform=None, train=True):
