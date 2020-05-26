@@ -50,7 +50,7 @@ parser.add_argument('--pretrain_dir', type=str, default=None,
                     help='load pretrained checkpoint for assigning labels')
 parser.add_argument('--pretrain_epo', type=int, default=None,
                     help='load pretrained epoch for assigning labels')
-parser.add_argument('--savedir', type=str, default='./saved_models/',
+parser.add_argument('--savedir', type=str, default='/mnt/raid/user/yaodong/saved_models/',
                     help='base directory for saving PyTorch model. (default: ./saved_models/)')
 args = parser.parse_args()
 
