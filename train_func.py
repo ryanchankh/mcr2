@@ -53,27 +53,28 @@ def load_architectures(name, dim):
 
 def load_trainset(name, transform=None, train=True):
     _name = name.lower()
+    DATAPATH = "/mnt/raid/user/yaodong/data/"
     if _name == "cifar10":
-        trainset = torchvision.datasets.CIFAR10(root="./data/cifar10/", train=train,
+        trainset = torchvision.datasets.CIFAR10(root=DATAPATH+"/cifar10/", train=train,
                                                 download=True, transform=transform)
     elif _name == "cifar100":
-        trainset = torchvision.datasets.CIFAR100(root="./data/cifar100/", train=train,
+        trainset = torchvision.datasets.CIFAR100(root=DATAPATH+"/cifar100/", train=train,
                                                  download=True, transform=transform)
     elif _name == "mnist":
-        trainset = torchvision.datasets.MNIST(root="./data/mnist/", train=train, 
+        trainset = torchvision.datasets.MNIST(root=DATAPATH+"/mnist/", train=train, 
                                               download=True, transform=transform)
     elif _name == "fashionmnist":
-        trainset = torchvision.datasets.FashionMNIST(root="./data/fashion_mnist/", train=train, 
+        trainset = torchvision.datasets.FashionMNIST(root=DATAPATH+"/fashion_mnist/", train=train, 
                                               download=True, transform=transform) 
     elif _name == "usps":
-        trainset = torchvision.datasets.USPS(root="./data/usps/", train=train, 
+        trainset = torchvision.datasets.USPS(root=DATAPATH+"/usps/", train=train, 
                                              download=True, transform=transform) 
     elif _name == "svhn":
         if train:
             split_ = 'train'
         else:
             split_ = 'test'
-        trainset = torchvision.datasets.SVHN(root="./data/svhn/", split=split_, 
+        trainset = torchvision.datasets.SVHN(root=DATAPATH+"/svhn/", split=split_, 
                                              download=True, transform=transform)
         trainset.targets = trainset.labels
         trainset.classes = np.arange(10)

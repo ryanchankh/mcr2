@@ -377,7 +377,7 @@ class CompressibleLoss4(torch.nn.Module):
         discrimn_loss_empi = self.compute_discrimn_loss_empirical(W)
         compress_loss_empi = self.compute_compress_loss_empirical(W, Pi)
         compress_loss_empi_ortho = self.compute_compress_loss_empirical_ortho(W, y)
-        discrimn_loss_theo = elf.compute_discrimn_loss_theoretical(W)
+        discrimn_loss_theo = self.compute_discrimn_loss_theoretical(W)
         compress_loss_theo = self.compute_compress_loss_theoretical(W, Pi)
         total_loss_empi = self.gam2 * -discrimn_loss_empi + compress_loss_empi - self.gam3 * compress_loss_empi_ortho
         return (total_loss_empi,
