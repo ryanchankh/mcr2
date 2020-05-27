@@ -315,9 +315,10 @@ class CompressibleLoss4(torch.nn.Module):
         I = torch.eye(p).cuda()
         num_imgs = len(y) // self.num_aug
         pair_combs = np.array(list(combinations(range(num_imgs), 2)))
-        num_pairs = int(0.3 * (num_imgs * (num_imgs + 1)) / 2.0)
+        # num_pairs = int(0.3 * (num_imgs * (num_imgs + 1)) / 2.0)
+        num_pairs = 500
         sample_idx = np.random.choice(len(pair_combs), num_pairs)
-        sample_pairs = pair_combs[:2000]
+        sample_pairs = pair_combs[sample_idx]
         compress_loss_ortho = 0.
         for step, (i, j) in enumerate(sample_pairs):
             Pi = np.zeros(len(y))

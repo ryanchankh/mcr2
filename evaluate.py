@@ -90,12 +90,13 @@ if __name__ == '__main__':
     trainset = tf.load_trainset(params['data'], train_transforms, train=True)
     if 'lcr' in params.keys(): # supervised corruption case
         trainset = tf.corrupt_labels(trainset, params['lcr'], params['lcs'])
-    trainloader = DataLoader(trainset, batch_size=500, shuffle=False, num_workers=4)
+    new_labels = trainset.targets
+    trainloader = DataLoader(trainset, batch_size=500, num_workers=4)
     train_features, train_labels = tf.get_features(net, trainloader)
 
     test_transforms = tf.load_transforms('test')
     testset = tf.load_trainset(params['data'], test_transforms, train=False)
-    testloader = DataLoader(testset, batch_size=200, shuffle=False, num_workers=4)
+    testloader = DataLoader(testset, batch_size=200, num_workers=4)
     test_features, test_labels = tf.get_features(net, testloader)
 
     if args.svm:
