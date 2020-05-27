@@ -44,7 +44,7 @@ parser.add_argument('--tail', type=str, default='',
                     help='extra information to add to folder name')
 parser.add_argument('--transform', type=str, default='default',
                     help='transform applied to trainset (default: default')
-parser.add_argument('--sampler', type=str, default='balance',
+parser.add_argument('--sampler', type=str, default='random',
                     help='sampler used in augmentloader (default: balance')
 parser.add_argument('--pretrain_dir', type=str, default=None,
                     help='load pretrained checkpoint for assigning labels')
@@ -59,8 +59,8 @@ args = parser.parse_args()
 
 ## Pipelines Setup
 model_dir = os.path.join(args.savedir,
-               'selfsup_{}+{}_{}_epo{}_bs{}_aug{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_gam3{}_eps{}_loss{}{}'.format(
-                    args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.lr, 
+               'selfsup_{}+{}_{}_epo{}_bs{}+{}_aug{}+{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_gam3{}_eps{}_loss{}{}'.format(
+                    args.arch, args.fd, args.data, args.epo, args.bs, args.sampler, args.aug, args.transform, args.lr, 
                     args.mom, args.wd, args.gam1, args.gam2, args.gam3, args.eps, args.loss, args.tail))
 headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
             "discrimn_loss_t",  "compress_loss_t", "compress_loss_ortho"]
