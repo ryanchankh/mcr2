@@ -98,49 +98,34 @@ def plot_loss_paper(args):
             max_.append(np.amax(arr[l:r]))
         return mean_, min_, max_
 
-    ## create saving directory
-    loss_dir = os.path.join(args.model_dir, 'figures', 'loss_paper')
-    if not os.path.exists(loss_dir):
-        os.makedirs(loss_dir)
-    file_dir = os.path.join(args.model_dir, 'losses.csv')
-    data = pd.read_csv(file_dir)
-
     ## extract loss from csv
-    obj_loss_e = -data['loss'].ravel()
-    dis_loss_e = data['discrimn_loss_e'].ravel()
-    com_loss_e = data['compress_loss_e'].ravel()
     dis_loss_t = data['discrimn_loss_t'].ravel()
     com_loss_t = data['compress_loss_t'].ravel()
     obj_loss_t = dis_loss_t - com_loss_t
+
     avg_dis_loss_t, min_dis_loss_t, max_dis_loss_t = moving_average(dis_loss_t)
     avg_com_loss_t, min_com_loss_t, max_com_loss_t = moving_average(com_loss_t)
     avg_obj_loss_t, min_obj_loss_t, max_obj_loss_t = moving_average(obj_loss_t)
-    plt.rc('text', usetex=False)
-    plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
+
+    ## Theoretical Loss
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
-    num_iter = np.arange(len(obj_loss_t))
-    ax.plot(num_iter, avg_obj_loss_t, label=r'$R - R^c$', #label=r'$\mathcal{L}^d-\mathcal{L}^c$', 
+    num_iter = np.arange(1, len(obj_loss_t))
+    ax.plot(np.log(num_iter), avg_obj_loss_t[:-1], label=r'$\Delta R$', 
                 color='green', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, avg_dis_loss_t, label=r'$R$', #label=r'$\mathcal{L}^d$', 
+    ax.plot(np.log(num_iter), avg_dis_loss_t[:-1], label=r'$R$', 
                 color='royalblue', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, avg_com_loss_t, label=r'$R^c$',#'$\mathcal{L}^c$', 
+    ax.plot(np.log(num_iter), avg_com_loss_t[:-1], label=r'$R^c$', 
                 color='coral', linewidth=1.0, alpha=0.8)
-    ax.fill_between(num_iter, max_obj_loss_t, min_obj_loss_t, facecolor='green', alpha=0.5)
-    ax.fill_between(num_iter, max_dis_loss_t, min_dis_loss_t, facecolor='royalblue', alpha=0.5)
-    ax.fill_between(num_iter, max_com_loss_t, min_com_loss_t, facecolor='coral', alpha=0.5)
-    ax.set_ylabel('Loss', fontname='Roman', fontsize=12)
-    ax.set_xlabel('Number of iterations', fontname='roman', fontsize=12)
-    ax.legend(loc='lower right', frameon=True, fancybox=True, prop={"size": 14}, ncol=3, framealpha=0.5)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
-    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
-    ax.grid(True, color='white')
-    ax.set_facecolor('whitesmoke')
-    fig.tight_layout()
+    # ax.fill_between(np.log(num_iter), max_obj_loss_t[:-1], min_obj_loss_t[:-1], facecolor='green', alpha=0.5)
+    # ax.fill_between(np.log(num_iter), max_dis_loss_t[:-1], min_dis_loss_t[:-1], facecolor='royalblue', alpha=0.5)
+    # ax.fill_between(np.log(num_iter), max_com_loss_t[:-1], min_com_loss_t[:-1], facecolor='coral', alpha=0.5)
+    ax.vlines(4, ymin=0, ymax=80, linestyle="--", linewidth=1.0, color='gray', alpha=0.8)
+    ax.set_ylabel('Loss', fontsize=14)
+    ax.set_xlabel('Number of iterations ($\log_2$ scale)', fontsize=14)
+    ax.legend(loc='lower right', prop={"size": 14}, ncol=3, framealpha=0.5)
+    [tick.label.set_fontsize(14) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(14) for tick in ax.yaxis.get_major_ticks()]
+    plt.tight_layout()
 
     file_name = os.path.join(loss_dir, 'loss_theoretical.png')
     plt.savefig(file_name, dpi=400)
@@ -158,7 +143,7 @@ def plot_pca(args, features, labels, epoch):
         os.makedirs(pca_dir)
 
     ## perform PCA on features
-    n_comp = np.min(args.comp, features.shape[1])
+    n_comp = np.min([args.comp, features.shape[1]])
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=len(trainset.classes), stack=False)
     pca = PCA(n_components=n_comp).fit(features.numpy())
@@ -171,29 +156,38 @@ def plot_pca(args, features, labels, epoch):
     plt.rc('text', usetex=False)
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=500)
     x_min = np.min([len(sig_val) for sig_val in sig_vals])
-    # ax.plot(np.arange(x_min), sig_vals[0][:x_min], color='black', 
-    #             label=f'all', alpha=0.6)
-    ax.set_xticks(np.arange(0, x_min, 5))
-    ax.set_yticks(np.arange(0, 40, 5))
+    ax.plot(np.arange(x_min), sig_vals[0][:x_min], '-p', markersize=3, markeredgecolor='black',
+        linewidth=1.5, color='tomato')
+    map_vir = plt.cm.get_cmap('Blues', 6)
+    norm = plt.Normalize(-10, 10)
+    class_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    norm_class = norm(class_list)
+    color = map_vir(norm_class)
     for c, sig_val in enumerate(sig_vals[1:]):
-        ax.plot(np.arange(x_min), sig_val[:x_min], markersize=5, 
-                    label=f'class - {c}', alpha=0.6)
-    ax.legend(loc='upper right', frameon=True, fancybox=True, prop={"size": 8}, ncol=1, framealpha=0.5)
-    ax.set_xlabel("components")
-    ax.set_ylabel("sigular values")
+        ax.plot(np.arange(x_min), sig_val[:x_min], '-o', markersize=3, markeredgecolor='black',
+                alpha=0.6, linewidth=1.0, color=color[c])
+    ax.set_xticks(np.arange(0, x_min, 5))
+    ax.set_yticks(np.arange(0, 35, 5))
+    # for c, sig_val in enumerate(sig_vals[1:]):
+    #     ax.plot(np.arange(x_min), sig_val[:x_min], marker='o', markersize=2, 
+    #                 label=f'class - {c}', alpha=0.6)
+    # ax.legend(loc='upper right', frameon=True, fancybox=True, prop={"size": 12}, ncol=2, framealpha=0.5)
+    ax.set_xlabel("components", fontsize=14)
+    ax.set_ylabel("sigular values", fontsize=14)
     # ax.set_title(f"PCA on features (Epoch: {epoch})")
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False)
+    # ax.spines['top'].set_visible(False)
+    # ax.spines['right'].set_visible(False)
+    # ax.spines['bottom'].set_visible(False)
+    # ax.spines['left'].set_visible(False)
     [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
     [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
-    ax.grid(True, color='white')
-    ax.set_facecolor('whitesmoke')
+    # ax.grid(True, color='white')
+    # ax.set_facecolor('whitesmoke')
     fig.tight_layout()
-
+    
+    np.save(os.path.join(pca_dir, "sig_vals.npy"), sig_vals)
     file_name = os.path.join(pca_dir, f"pca_classVclass_epoch{epoch}.png")
     fig.savefig(file_name)
     print("Plot saved to: {}".format(file_name))
@@ -239,6 +233,9 @@ def plot_hist_all(args, features, labels, epoch):
     hist_folder = os.path.join(args.model_dir, 'figures', 'hist_all')
     if not os.path.exists(hist_folder):
         os.makedirs(hist_folder)
+    if not os.path.exists(os.path.join(hist_folder, "sim_mat")):
+        os.makedirs(os.path.join(hist_folder, "sim_mat"))
+    
 
     num_classes = len(trainset.classes)
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
@@ -270,6 +267,8 @@ def plot_hist_all(args, features, labels, epoch):
                 ax[i, j].set_title(f'class {j}')
             if j == 0:
                 ax[i, j].set_ylabel(f'class {i}')
+            
+            np.save(os.path.join(hist_folder, "sim_mat", f"sim_mat{i}_{j}.npy"), sim_mat)
     fig.text(0.5, -0.01, 'cosine similarity', ha='center')
     fig.text(-0.01, 0.5, 'count', va='center', rotation='vertical')
     plt.tight_layout()
@@ -362,12 +361,27 @@ def plot_traintest(args, path_test):
             max_.append(row.max())
             min_.append(row.min())
         return pd.DataFrame(mean_), pd.DataFrame(max_), pd.DataFrame(min_)
+
+    def moving_average(arr, size=(9, 9)):
+        assert len(size) == 2
+        mean_ = []
+        min_ = []
+        max_ = [] 
+        for i in range(len(arr)):
+            l, r = i-size[0], i+size[1]
+            l, r = np.max([l, 0]), r + 1 #adjust bounds
+            mean_.append(np.mean(arr[l:r]))
+            min_.append(np.amin(arr[l:r]))
+            max_.append(np.amax(arr[l:r]))
+        return mean_, min_, max_
+
     path_train = os.path.join(args.model_dir, 'losses.csv')
+    path_test = os.path.join(args.model_dir, 'losses_test.csv')
     df_train = pd.read_csv(path_train)
     df_test = pd.read_csv(path_test)
     df_train_mean, df_train_max, df_train_min = process_df(df_train)
     df_test_mean, df_test_max, df_test_min = process_df(df_test)
-    
+
     train_dis_loss_mean = df_train_mean['discrimn_loss_t'].ravel()
     train_com_loss_mean = df_train_mean['compress_loss_t'].ravel()
     train_obj_loss_mean = train_dis_loss_mean - train_com_loss_mean
@@ -387,54 +401,46 @@ def plot_traintest(args, path_test):
     test_dis_loss_min = df_test_min['discrimn_loss_t'].ravel()
     test_com_loss_min = df_test_min['compress_loss_t'].ravel()
     test_obj_loss_min = test_dis_loss_min - test_com_loss_min
-            
-    # create save folder
-    save_dir = os.path.join(args.model_dir, 'figures', 'loss_paper')
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
 
-    plt.rc('text', usetex=False)
+    train_obj_loss_mean = moving_average(train_obj_loss_mean)[0] 
+    test_obj_loss_mean = moving_average(test_obj_loss_mean)[0]
+    train_dis_loss_mean = moving_average(train_dis_loss_mean)[0]
+    test_dis_loss_mean = moving_average(test_dis_loss_mean)[0]
+    train_com_loss_mean = moving_average(train_com_loss_mean)[0]
+    test_com_loss_mean = moving_average(test_com_loss_mean)[0]
+    plt.rc('text', usetex=True)
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
     num_iter = np.arange(len(train_obj_loss_mean))
-    ax.plot(num_iter, train_obj_loss_mean, label=r'$R^d-R^c$ (train)', 
+    ax.plot(num_iter, train_obj_loss_mean, label=r'$\Delta R$ (train)', 
                 color='green', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, test_obj_loss_mean, label=r'$R^d-R^c$ (test)', 
+    ax.plot(num_iter, test_obj_loss_mean, label='$\Delta R$ (test)', 
                 color='green', linewidth=1.0, alpha=0.8, linestyle='--')
-    ax.plot(num_iter, train_dis_loss_mean, label=r'$R^d$ (train)', 
+    ax.plot(num_iter, train_dis_loss_mean, label='$R$ (train)', 
                 color='royalblue', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, test_dis_loss_mean, label=r'$R^d$ (test)', 
+    ax.plot(num_iter, test_dis_loss_mean, label='$R$ (test)', 
                 color='royalblue', linewidth=1.0, alpha=0.8, linestyle='--')
-    ax.plot(num_iter, train_com_loss_mean, label=r'$R^c$ (train)', 
+    ax.plot(num_iter, train_com_loss_mean, label='$R^c$ (train)', 
                 color='coral', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, test_com_loss_mean, label=r'$R^c$ (test)', 
+    ax.plot(num_iter, test_com_loss_mean, label='$R^c$ (test)', 
                 color='coral', linewidth=1.0, alpha=0.8, linestyle='--')
-    # ax.fill_between(num_iter, train_obj_loss_max, train_obj_loss_min, facecolor='green', alpha=0.5)
-    # ax.fill_between(num_iter, train_dis_loss_max, train_dis_loss_min, facecolor='royalblue', alpha=0.5)
-    # ax.fill_between(num_iter, train_com_loss_max, train_com_loss_min, facecolor='coral', alpha=0.5)
-    # ax.fill_between(num_iter, test_obj_loss_max, test_obj_loss_min, facecolor='green', alpha=0.5)
-    # ax.fill_between(num_iter, test_dis_loss_max, test_dis_loss_min, facecolor='royalblue', alpha=0.5)
-    # ax.fill_between(num_iter, test_com_loss_max, test_com_loss_min, facecolor='coral', alpha=0.5)
-    ax.set_ylabel('Loss', fontname='Roman', fontsize=12)
-    ax.set_xlabel('Epoch', fontname='roman', fontsize=12)
-    ax.legend(loc='lower right', frameon=True, fancybox=True, prop={"size": 8}, ncol=3, framealpha=0.5)
+    ax.set_ylabel('Loss', fontsize=14)
+    ax.set_xlabel('Epoch', fontsize=14)
+    ax.legend(loc='lower right', frameon=True, fancybox=True, prop={"size": 12}, ncol=3, framealpha=0.5)
     ax.set_ylim(0, 80)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
-    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
-    ax.grid(True, color='white')
-    ax.set_facecolor('whitesmoke')
+    [tick.label.set_fontsize(14) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(14) for tick in ax.yaxis.get_major_ticks()]
     fig.tight_layout()
 
+    save_dir = os.path.join(args.model_dir, 'figures', "traintest")
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
     file_name = os.path.join(save_dir, f"loss_traintest.png")
-    fig.savefig(file_name)
+    fig.savefig(file_name, dpi=400)
     print("Plot saved to: {}".format(file_name))
     file_name = os.path.join(save_dir, f"loss_traintest.pdf")
-    fig.savefig(file_name)
+    fig.savefig(file_name, dpi=400)
     print("Plot saved to: {}".format(file_name))
     plt.close()
     
@@ -461,12 +467,12 @@ def plot_pca_epoch(args):
             features_ = features_sort[args.class_]
         else:
             features_ = features.numpy()
-        n_comp = np.min(args.comp, features.shape[1])
+        n_comp = np.min([args.comp, features.shape[1]])
         pca = PCA(n_components=n_comp).fit(features_)
         sig_vals.append(pca.singular_values_)
 
     ## plot singular values
-    plt.rc('text', usetex=False)
+    plt.rc('text', usetex=True)
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = ['Times New Roman']
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), dpi=400)
@@ -497,6 +503,7 @@ def plot_pca_epoch(args):
 
     ## save
     save_dir = os.path.join(args.model_dir, 'figures', 'pca')
+    np.save(os.path.join(save_dir, "sig_vals_epoch.npy"), sig_vals)
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     file_name = os.path.join(save_dir, f"pca_class{args.class_}.png")
@@ -509,28 +516,33 @@ def plot_pca_epoch(args):
 
 
 def plot_accuracy(args, path):
+    def moving_average(arr, size=(9, 9)):
+        assert len(size) == 2
+        mean_ = []
+        min_ = []
+        max_ = [] 
+        for i in range(len(arr)):
+            l, r = i-size[0], i+size[1]
+            l, r = np.max([l, 0]), r + 1 #adjust bounds
+            mean_.append(np.mean(arr[l:r]))
+            min_.append(np.amin(arr[l:r]))
+            max_.append(np.amax(arr[l:r]))
+        return mean_, min_, max_
     df = pd.read_csv(path)
     acc_train = df['acc_train'].ravel()
     acc_test = df['acc_test'].ravel()
     epochs = np.arange(len(df))
 
-    plt.rc('text', usetex=False)
-    plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman']
+    acc_train, _, _ = moving_average(acc_train)
+    acc_test, _, _ = moving_average(acc_test)
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), dpi=400)
-    ax.plot(epochs, acc_train, label='training', alpha=0.6)
-    ax.plot(epochs, acc_test, label='testing', alpha=0.6)
-    ax.legend(loc='lower right', frameon=True, fancybox=True, prop={"size": 8}, ncol=2, framealpha=0.5)
-    ax.set_xlabel("epochs")
-    ax.set_ylabel("accuracy")
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
-    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
-    ax.grid(True, color='white')
-    ax.set_facecolor('whitesmoke')
+    ax.plot(epochs, acc_train, label='train', alpha=0.6, color='lightcoral')
+    ax.plot(epochs, acc_test, label='test', alpha=0.6, color='cornflowerblue')
+    ax.legend(loc='lower right', frameon=True, fancybox=True, prop={"size": 14}, ncol=2, framealpha=0.5)
+    ax.set_xlabel("epochs", fontsize=14)
+    ax.set_ylabel("accuracy", fontsize=14)
+    [tick.label.set_fontsize(14) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(14) for tick in ax.yaxis.get_major_ticks()]
     fig.tight_layout()
 
     ## save
@@ -570,7 +582,11 @@ def plot_heatmap(args, features, labels, epoch):
     [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
     fig.tight_layout()
 
+    
     save_dir = os.path.join(args.model_dir, 'figures', 'heatmaps')
+    # os.mkdir(save_dir+"/sim_mat/")
+    for i in range(500):
+        np.save(save_dir+f"/sim_mat/sim_mat{i}.npy", sim_mat[i*100:(i+1)*100])
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     file_name = os.path.join(save_dir, f"heatmat_epoch{epoch}.png")
