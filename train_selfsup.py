@@ -89,7 +89,7 @@ trainloader = AugmentLoader(trainset,
                             batch_size=args.bs,
                             num_aug=args.aug)
 
-criterion = CompressibleLoss6(gam1=args.gam1, gam2=args.gam2, gam3=args.gam3, eps=args.eps, num_aug=args.aug)
+criterion = CompressibleLoss7(gam1=args.gam1, gam2=args.gam2, gam3=args.gam3, eps=args.eps, num_aug=args.aug)
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
 
 
