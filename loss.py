@@ -279,9 +279,9 @@ class CompressibleLoss3(torch.nn.Module):
                 compress_loss_empi_ortho.item())
 
 
-class CompressibleLoss4(torch.nn.Module):
+class CompressibleLossContrastive(torch.nn.Module):
     def __init__(self, gam1=1.0, gam2=1.0, gam3=0.01, eps=0.01, num_aug=10):
-        super(CompressibleLoss4, self).__init__()
+        super(CompressibleLossContrastive, self).__init__()
         self.gam1 = gam1
         self.gam2 = gam2
         self.gam3 = gam3
@@ -391,9 +391,9 @@ class CompressibleLoss4(torch.nn.Module):
                 compress_loss_empi_ortho.item())
 
 
-class CompressibleLoss6(torch.nn.Module):
+class CompressibleLossCompressive(torch.nn.Module):
     def __init__(self, gam1=1.0, gam2=1.0, gam3=0.01, eps=0.01, num_aug=10):
-        super(CompressibleLoss6, self).__init__()
+        super(CompressibleLossCompressive, self).__init__()
         self.gam1 = gam1
         self.gam2 = gam2
         self.gam3 = gam3
@@ -427,11 +427,9 @@ class CompressibleLoss6(torch.nn.Module):
         I = torch.eye(p).cuda()
         num_imgs = len(y) // self.num_aug
         pair_combs = np.array(list(combinations(range(num_imgs), 2)))
-        num_pairs = int(1.0 * (num_imgs * (num_imgs + 1)) / 2.0)
-        sample_idx = np.random.choice(len(pair_combs), num_pairs)
-        sample_pairs = pair_combs#[sample_idx]
-        compress_loss_ortho = 0.
-        R = []
+        # sample_idx = np.random.choice(len(pair_combs), num_pairs, replace=False)
+        sample_pairs = pair_combs
+        R, dR = [], []
         for step, (i, j) in enumerate(sample_pairs):
             Pi = np.zeros(len(y))
             Pi[i * self.num_aug:(i + 1) * self.num_aug] = 1.
@@ -441,9 +439,30 @@ class CompressibleLoss6(torch.nn.Module):
             trPi = torch.trace(Pi) + 1e-8
             scalar = p / (trPi * self.eps)
             log_det = torch.logdet(I + scalar * W.matmul(Pi).matmul(W.T))
-            R.append(log_det)
-        vals, idx = torch.sort(torch.tensor(R))
-        return vals[-150:].sum()
+            loss_d = log_det
+
+            Pi_i = np.zeros(len(y))
+            Pi_i[i * self.num_aug:(i + 1) * self.num_aug] = 1.
+            Pi_i = np.diag(Pi_i)
+            Pi_i = torch.tensor(Pi_i, dtype=torch.float32).cuda()
+            trPi_i = torch.trace(Pi_i) + 1e-8
+            scalar_i = p / (trPi_i * self.eps)
+            log_det_i = torch.logdet(I + scalar_i * W.matmul(Pi_i).matmul(W.T))
+
+            Pi_j = np.zeros(len(y))
+            Pi_j[j * self.num_aug:(j + 1) * self.num_aug] = 1.
+            Pi_j = np.diag(Pi_j)
+            Pi_j = torch.tensor(Pi_j, dtype=torch.float32).cuda()
+            trPi_j = torch.trace(Pi_j) + 1e-8
+            scalar_j = p / (trPi_j * self.eps)
+            log_det_j = torch.logdet(I + scalar_j * W.matmul(Pi_j).matmul(W.T))
+
+            loss_c = 0.5 * (log_det_i + log_det_j)
+            R.append(loss_d)
+            dr = loss_d - loss_c
+            dR.append(dr.cpu().detach().item())
+        idx = np.argsort(dR)
+        return R[idx][-140:].mean()
 
     def compute_discrimn_loss_theoretical(self, W):
         """Theoretical Discriminative Loss."""
@@ -483,10 +502,11 @@ class CompressibleLoss6(torch.nn.Module):
                 [discrimn_loss_theo.item(), compress_loss_theo.item()],
                 compress_loss_empi_ortho.item())
 
-            
-class CompressibleLoss7(torch.nn.Module):
+
+
+class CompressibleLossTriplet(torch.nn.Module):
     def __init__(self, gam1=1.0, gam2=1.0, gam3=0.01, eps=0.01, num_aug=10):
-        super(CompressibleLoss7, self).__init__()
+        super(CompressibleLoss4, self).__init__()
         self.gam1 = gam1
         self.gam2 = gam2
         self.gam3 = gam3
@@ -519,24 +539,48 @@ class CompressibleLoss7(torch.nn.Module):
         p, m = W.shape
         I = torch.eye(p).cuda()
         num_imgs = len(y) // self.num_aug
-        pair_combs = np.array(list(combinations(range(num_imgs), 2)))
-        num_pairs = int(1.0 * (num_imgs * (num_imgs + 1)) / 2.0)
-        sample_idx = np.random.choice(len(pair_combs), num_pairs)
-        sample_pairs = pair_combs#[sample_idx]
-        compress_loss_ortho = 0.
-        R = []
-        for step, (i, j) in enumerate(sample_pairs):
+        pair_combs = np.array(list(combinations(range(num_imgs), 3)))
+        # sample_idx = np.random.choice(len(pair_combs), num_pairs, replace=False)
+        sample_pairs = pair_combs
+        R, dR = [], []
+        for step, (i, j, k) in enumerate(sample_pairs):
             Pi = np.zeros(len(y))
             Pi[i * self.num_aug:(i + 1) * self.num_aug] = 1.
             Pi[j * self.num_aug:(j + 1) * self.num_aug] = 1.
-            Pi = np.diag(Pi)
-            Pi = torch.tensor(Pi, dtype=torch.float32).cuda()
+            Pi[k * self.num_aug:(k + 1) * self.num_aug] = 1.
+            Pi = torch.tensor(np.diag(Pi), dtype=torch.float32).cuda()
             trPi = torch.trace(Pi) + 1e-8
             scalar = p / (trPi * self.eps)
             log_det = torch.logdet(I + scalar * W.matmul(Pi).matmul(W.T))
-            R.append(log_det)
-        vals, idx = torch.sort(torch.tensor(R))
-        return vals[-150:].mean() - vals[:10].mean()
+            loss_d = log_det
+
+            Pi_i = np.zeros(len(y))
+            Pi_i[i * self.num_aug:(i + 1) * self.num_aug] = 1.
+            Pi_i = torch.tensor(np.diag(Pi_i), dtype=torch.float32).cuda()
+            trPi_i = torch.trace(Pi_i) + 1e-8
+            scalar_i = p / (trPi_i * self.eps)
+            log_det_i = torch.logdet(I + scalar_i * W.matmul(Pi_i).matmul(W.T))
+
+            Pi_j = np.zeros(len(y))
+            Pi_j[j * self.num_aug:(j + 1) * self.num_aug] = 1.
+            Pi_j = torch.tensor(np.diag(Pi_j), dtype=torch.float32).cuda()
+            trPi_j = torch.trace(Pi_j) + 1e-8
+            scalar_j = p / (trPi_j * self.eps)
+            log_det_j = torch.logdet(I + scalar_j * W.matmul(Pi_j).matmul(W.T))
+
+            Pi_k = np.zeros(len(y))
+            Pi_k[k * self.num_aug:(k + 1) * self.num_aug] = 1.
+            Pi_k = torch.tensor(np.diag(Pi_k), dtype=torch.float32).cuda()
+            trPi_k = torch.trace(Pi_k) + 1e-8
+            scalar_k = p / (trPi_k * self.eps)
+            log_det_k = torch.logdet(I + scalar_k * W.matmul(Pi_k).matmul(W.T))
+
+            loss_c = 0.5 * (log_det_i + log_det_j + log_det_k)
+            R.append(loss_d)
+            dr = loss_d - loss_c
+            dR.append(dr.cpu().detach().item())
+        idx = np.argsort(dR)
+        return R[idx][-140:].mean()
 
     def compute_discrimn_loss_theoretical(self, W):
         """Theoretical Discriminative Loss."""
@@ -567,7 +611,7 @@ class CompressibleLoss7(torch.nn.Module):
         Pi = torch.tensor(Pi, dtype=torch.float32).cuda()
         discrimn_loss_empi = self.compute_discrimn_loss_empirical(W)
         compress_loss_empi = self.compute_compress_loss_empirical(W, Pi)
-        compress_loss_empi_ortho, R = self.compute_compress_loss_empirical_ortho(W, y)
+        compress_loss_empi_ortho = self.compute_compress_loss_empirical_ortho(W, y)
         discrimn_loss_theo = self.compute_discrimn_loss_theoretical(W)
         compress_loss_theo = self.compute_compress_loss_theoretical(W, Pi)
         total_loss_empi = self.gam2 * -discrimn_loss_empi + compress_loss_empi - self.gam3 * compress_loss_empi_ortho
