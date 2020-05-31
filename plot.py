@@ -29,7 +29,7 @@ def plot_loss(args):
     com_loss_e = data['compress_loss_e'].ravel()
     dis_loss_t = data['discrimn_loss_t'].ravel()
     com_loss_t = data['compress_loss_t'].ravel()
-    com_loss_o = data['compress_loss_ortho'].ravel()
+    # com_loss_o = data['compress_loss_ortho'].ravel()
     obj_loss_t = dis_loss_t - com_loss_t
 
     ## Theoretical Loss
@@ -65,9 +65,9 @@ def plot_loss(args):
                 color='royalblue', linewidth=1.0, alpha=0.8)
     ax.plot(num_iter, com_loss_e, label=r'$\widehat{\mathcal{L}^c}$', 
                 color='coral', linewidth=1.0, alpha=0.8)
-    if len(com_loss_o) != 0:
-        ax.plot(num_iter, com_loss_o, label=r'ortho', 
-            color='black', linewidth=1.0, alpha=0.8)
+    # if len(com_loss_o) != 0:
+        # ax.plot(num_iter, com_loss_o, label=r'ortho', 
+            # color='black', linewidth=1.0, alpha=0.8)
     ax.set_ylabel('Loss', fontsize=10)
     ax.set_xlabel('Number of iterations', fontsize=10)
     ax.legend(loc='lower right', prop={"size": 15}, ncol=3, framealpha=0.5)
@@ -99,6 +99,8 @@ def plot_loss_paper(args):
         return mean_, min_, max_
 
     ## extract loss from csv
+    file_dir = os.path.join(args.model_dir, 'losses.csv')
+    data = pd.read_csv(file_dir)
     dis_loss_t = data['discrimn_loss_t'].ravel()
     com_loss_t = data['compress_loss_t'].ravel()
     obj_loss_t = dis_loss_t - com_loss_t
@@ -127,6 +129,7 @@ def plot_loss_paper(args):
     [tick.label.set_fontsize(14) for tick in ax.yaxis.get_major_ticks()]
     plt.tight_layout()
 
+    loss_dir = os.path.join(args.model_dir, "loss_paper")
     file_name = os.path.join(loss_dir, 'loss_theoretical.png')
     plt.savefig(file_name, dpi=400)
     print("Plot saved to: {}".format(file_name))
