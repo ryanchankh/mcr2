@@ -22,7 +22,7 @@ parser.add_argument('--epo', type=int, default=50,
                     help='number of epochs for training (default: 50)')
 parser.add_argument('--bs', type=int, default=1000,
                     help='input batch size for training (default: 1000)')
-parser.add_argument('--aug', type=int, default=49,
+parser.add_argument('--aug', type=int, default=50,
                     help='number of augmentations per mini-batch (default: 49)')
 parser.add_argument('--lr', type=float, default=0.001,
                     help='learning rate (default: 0.001)')
@@ -42,6 +42,10 @@ parser.add_argument('--transform', type=str, default='default',
                     help='transform applied to trainset (default: default')
 parser.add_argument('--sampler', type=str, default='random',
                     help='sampler used in augmentloader (default: random')
+parser.add_argument('--pretrain_dir', type=str, default=None,
+                    help='load pretrained checkpoint for assigning labels')
+parser.add_argument('--pretrain_epo', type=int, default=None,
+                    help='load pretrained epoch for assigning labels')
 parser.add_argument('--savedir', type=str, default='./saved_models/',
                     help='base directory for saving PyTorch model. (default: ./saved_models/)')
 args = parser.parse_args()
@@ -77,7 +81,10 @@ def lr_schedule(epoch, optimizer):
 
 
 ## Prepare for Training
-net = tf.load_architectures(args.arch, args.fd)
+if args.pretrain_dir is not None:
+    net, _ = tf.load_checkpoint(args.pretrain_dir, args.pretrain_epo)  
+else:
+    net = tf.load_architectures(args.arch, args.fd)
 transforms = tf.load_transforms(args.transform)
 trainset = tf.load_trainset(args.data)
 trainloader = AugmentLoader(trainset,
@@ -86,14 +93,13 @@ trainloader = AugmentLoader(trainset,
                             batch_size=args.bs,
                             num_aug=args.aug)
 criterion = CompressibleLoss(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
-# optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
-optimizer = Adam(net.parameters(), lr=args.lr, weight_decay=args.wd)
+optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
 
 
 ## Training
 for epoch in range(args.epo):
     lr_schedule(epoch, optimizer)
-    for step, (batch_imgs, batch_lbls, batch_idx) in enumerate(trainloader):
+    for step, (batch_imgs, _, batch_idx) in enumerate(trainloader):
         batch_features = net(batch_imgs.cuda())
         loss, loss_empi, loss_theo = criterion(batch_features, batch_idx)
         optimizer.zero_grad()
