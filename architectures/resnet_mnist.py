@@ -58,6 +58,7 @@ class Bottleneck(nn.Module):
         out = F.relu(out)
         return out
 
+
 class ResNetMNIST(nn.Module):
     def __init__(self, block, num_blocks, feature_dim=512):
         super(ResNetMNIST, self).__init__()
@@ -69,8 +70,7 @@ class ResNetMNIST(nn.Module):
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
-        self.layer4 = self._make_layer(block, self.feature_dim, num_blocks[3], stride=2)
-
+        self.layer4 = self._make_layer(block, feature_dim, num_blocks[3], stride=2)
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1] * (num_blocks - 1)
         layers = []
@@ -78,7 +78,6 @@ class ResNetMNIST(nn.Module):
             layers.append(block(self.in_planes, planes, stride))
             self.in_planes = planes * block.expansion
         return nn.Sequential(*layers)
-
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
@@ -89,5 +88,5 @@ class ResNetMNIST(nn.Module):
         out = out.view(out.size(0), -1)
         return F.normalize(out)
 
-def ResNet18MNIST(feature_dim=512):
+def ResNet10MNIST(feature_dim=512):
     return ResNetMNIST(BasicBlock, [1, 1, 1, 1], feature_dim)
