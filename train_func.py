@@ -39,9 +39,15 @@ def load_architectures(name, dim):
     elif _name == "cnn":
         from architectures.cnn import CNN
         net = CNN(dim)
-    elif _name =="cnn2":
+    elif _name == "cnn2":
         from architectures.cnn import CNN2
         net = CNN2(dim)
+    elif _name == "resnet10mnist":
+        from architectures.resnet_mnist import ResNet10MNIST
+        net = ResNet10MNIST(dim)
+    elif _name =="resnet18emp":
+        from architectures.resnet_cifar import ResNet18Emp
+        net = ResNet18Emp(dim)
     else:
         raise NameError("{} not found in archiectures.".format(name))
     
@@ -63,7 +69,7 @@ def load_trainset(name, transform=None, train=True):
     elif _name == "mnist":
         trainset = torchvision.datasets.MNIST(root=DATAPATH+"/mnist/", train=train, 
                                               download=True, transform=transform)
-    elif _name == "fashionmnist":
+    elif _name == "fashionmnist" or _name == "fmnist":
         trainset = torchvision.datasets.FashionMNIST(root=DATAPATH+"/fashion_mnist/", train=train, 
                                               download=True, transform=transform) 
     elif _name == "usps":
@@ -121,6 +127,12 @@ def load_transforms(name):
                 transforms.RandomAffine(0, scale=(0.8, 1.1)),
                 transforms.RandomAffine(0, shear=(-20, 20))]), 
                 GaussianBlur(kernel_size=3),
+            transforms.ToTensor()])
+    elif _name == "fashionmnist" or _name == "fmnist":
+        transform = transforms.Compose([
+            transforms.RandomResizedCrop(28),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomRotation((-90, 90)),
             transforms.ToTensor()])
     elif _name == "test":
         transform = transforms.ToTensor()
