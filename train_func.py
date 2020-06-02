@@ -51,6 +51,12 @@ def load_architectures(name, dim):
     elif _name == "resnet18stl":
         from architectures.resnet_stl import ResNet18STL
         net = ResNet18STL(dim)
+    elif _name == "resnet18stl2":
+        from architectures.resnet_stl import ResNet18STL2
+        net = ResNet18STL2(dim)
+    elif _name == "resnet18stlsmall":
+        from architectures.resnet_stl import ResNet18STLsmall
+        net = ResNet18STLsmall(dim)
     else:
         raise NameError("{} not found in archiectures.".format(name))
     net = torch.nn.DataParallel(net).cuda()
@@ -132,7 +138,7 @@ def load_transforms(name):
                 transforms.RandomAffine(0, scale=(0.8, 1.1)),
                 transforms.RandomAffine(0, shear=(-20, 20))]), 
             transforms.ToTensor()])
-    elif _name == "mnist" or _name == "stl10":
+    elif _name == "mnist":
          transform = transforms.Compose([
             transforms.RandomChoice([
                 transforms.RandomAffine((-90, 90)),
@@ -140,6 +146,14 @@ def load_transforms(name):
                 transforms.RandomAffine(0, scale=(0.8, 1.1)),
                 transforms.RandomAffine(0, shear=(-20, 20))]), 
                 GaussianBlur(kernel_size=3),
+            transforms.ToTensor()])
+    elif _name == "stl10":
+        transform = transforms.Compose([
+            transforms.RandomResizedCrop(96),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomApply([transforms.ColorJitter(0.8, 0.8, 0.8, 0.2)], p=0.8),
+            transforms.RandomGrayscale(p=0.2),
+            GaussianBlur(kernel_size=9),
             transforms.ToTensor()])
     elif _name == "fashionmnist" or _name == "fmnist":
         transform = transforms.Compose([
