@@ -164,6 +164,47 @@ class ResNetSTLsmall(nn.Module):
         out = out.view(out.size(0), -1)
         return F.normalize(out)
 
+class ResNetSTLsmall2(nn.Module):
+    def __init__(self, block, num_blocks, feature_dim=512):
+        super(ResNetSTLsmall2, self).__init__()
+        self.in_planes = 32
+        self.feature_dim = feature_dim
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=5, stride=2, padding=3, bias=False)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.layer1 = self._make_layer(block, 32, num_blocks[0], stride=1)
+        self.layer2 = self._make_layer(block, 32, num_blocks[1], stride=2)
+        self.layer3 = self._make_layer(block, 64, num_blocks[2], stride=2)
+        self.layer4 = self._make_layer(block, 128, num_blocks[3], stride=2)
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.reshape = torch.nn.Sequential(
+            nn.Linear(128 * block.expansion, 128, bias=False), 
+            nn.BatchNorm1d(128),
+            nn.ReLU(inplace=True), 
+            nn.Linear(128, feature_dim, bias=True)
+            )
+
+    def _make_layer(self, block, planes, num_blocks, stride):
+        strides = [stride] + [1] * (num_blocks - 1)
+        layers = []
+        for stride in strides:
+            layers.append(block(self.in_planes, planes, stride))
+            self.in_planes = planes * block.expansion
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = F.relu(out)
+        out = self.maxpool(out)
+        out = self.layer1(out)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = self.layer4(out)
+        out = self.avgpool(out)
+        out = out.view(out.size(0), -1)
+        out = self.reshape(out)
+        return F.normalize(out)
 
 
 def ResNet18STL(feature_dim=128):
@@ -174,3 +215,6 @@ def ResNet18STL2(feature_dim=128):
 
 def ResNet18STLsmall(feature_dim=128):
     return ResNetSTLsmall(BasicBlock, [2, 2, 2, 2], feature_dim)
+
+def ResNet18STLsmall2(feature_dim=128):
+    return ResNetSTLsmall2(BasicBlock, [2, 2, 2, 2], feature_dim)

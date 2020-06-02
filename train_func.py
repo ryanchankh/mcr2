@@ -57,6 +57,9 @@ def load_architectures(name, dim):
     elif _name == "resnet18stlsmall":
         from architectures.resnet_stl import ResNet18STLsmall
         net = ResNet18STLsmall(dim)
+    elif _name == "resnet18stlsmall2":
+        from architectures.resnet_stl import ResNet18STLsmall2
+        net = ResNet18STLsmall2(dim)
     else:
         raise NameError("{} not found in archiectures.".format(name))
     net = torch.nn.DataParallel(net).cuda()
