@@ -45,14 +45,14 @@ def load_architectures(name, dim):
     elif _name == "resnet10mnist":
         from architectures.resnet_mnist import ResNet10MNIST
         net = ResNet10MNIST(dim)
-    elif _name =="resnet18emp":
+    elif _name == "resnet18emp":
         from architectures.resnet_cifar import ResNet18Emp
         net = ResNet18Emp(dim)
+    elif _name == "resnet18stl":
+        from architectures.resnet_stl import ResNet18STL
+        net = ResNet18STL(dim)
     else:
         raise NameError("{} not found in archiectures.".format(name))
-    
-    # return net.cuda()
-    # net = torch.nn.DataParallel(net.cuda())
     net = torch.nn.DataParallel(net).cuda()
     return net
 
@@ -84,6 +84,19 @@ def load_trainset(name, transform=None, train=True):
                                              download=True, transform=transform)
         trainset.targets = trainset.labels
         trainset.classes = np.arange(10)
+    elif _name == "stl10":
+        trainset = torchvision.datasets.STL10(root=DATAPATH+"/stl10/", split='train', 
+                                              transform=transform, download=True)
+        testset = torchvision.datasets.STL10(root=DATAPATH+"/stl10/", split='test', 
+                                             transform=transform, download=True)
+        if not train:
+            trainset.targets = trainset.labels
+            return testset
+        else:
+            trainset.data = np.concatenate([trainset.data, testset.data])
+            trainset.labels = trainset.labels.tolist() + testset.labels.tolist()
+            trainset.targets = trainset.labels
+            return trainset
     else:
         raise NameError("{} not found in trainset loader".format(name))
     return trainset
@@ -119,7 +132,7 @@ def load_transforms(name):
                 transforms.RandomAffine(0, scale=(0.8, 1.1)),
                 transforms.RandomAffine(0, shear=(-20, 20))]), 
             transforms.ToTensor()])
-    elif _name == "mnist":
+    elif _name == "mnist" or _name == "stl10":
          transform = transforms.Compose([
             transforms.RandomChoice([
                 transforms.RandomAffine((-90, 90)),
@@ -130,9 +143,14 @@ def load_transforms(name):
             transforms.ToTensor()])
     elif _name == "fashionmnist" or _name == "fmnist":
         transform = transforms.Compose([
-            transforms.RandomResizedCrop(28),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomRotation((-90, 90)),
+            transforms.RandomChoice([
+                transforms.RandomAffine((-90, 90)),
+                transforms.RandomAffine(0, translate=(0.2, 0.4)),
+                transforms.RandomAffine(0, scale=(0.8, 1.1)),
+                transforms.RandomAffine(0, shear=(-20, 20))]),
+            GaussianBlur(kernel_size=3),
             transforms.ToTensor()])
     elif _name == "test":
         transform = transforms.ToTensor()
