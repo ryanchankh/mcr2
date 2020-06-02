@@ -15,7 +15,7 @@ from cluster import kmeans, ensc
 
 
 def svm(args, train_features, train_labels, test_features, test_labels):
-    svm = LinearSVC(verbose=0)
+    svm = LinearSVC(verbose=0, random_state=10)
     svm.fit(train_features, train_labels)
     acc_train = svm.score(train_features, train_labels)
     acc_test = svm.score(test_features, test_labels)
