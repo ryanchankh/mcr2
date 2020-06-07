@@ -66,37 +66,36 @@ def load_architectures(name, dim):
     return net
 
 
-def load_trainset(name, transform=None, train=True):
+def load_trainset(name, transform=None, train=True, path="./data/"):
     _name = name.lower()
-    DATAPATH = "/mnt/raid/user/yaodong/data/"
     if _name == "cifar10":
-        trainset = torchvision.datasets.CIFAR10(root=DATAPATH+"/cifar10/", train=train,
+        trainset = torchvision.datasets.CIFAR10(root=os.path.join(path, "cifar10"), train=train,
                                                 download=True, transform=transform)
     elif _name == "cifar100":
-        trainset = torchvision.datasets.CIFAR100(root=DATAPATH+"/cifar100/", train=train,
+        trainset = torchvision.datasets.CIFAR100(root=os.path.join(path, "cifar100"), train=train,
                                                  download=True, transform=transform)
     elif _name == "mnist":
-        trainset = torchvision.datasets.MNIST(root=DATAPATH+"/mnist/", train=train, 
+        trainset = torchvision.datasets.MNIST(root=os.path.join(path, "mnist"), train=train, 
                                               download=True, transform=transform)
     elif _name == "fashionmnist" or _name == "fmnist":
-        trainset = torchvision.datasets.FashionMNIST(root=DATAPATH+"/fashion_mnist/", train=train, 
+        trainset = torchvision.datasets.FashionMNIST(root=os.path.join(path, "fashion_mnist"), train=train, 
                                               download=True, transform=transform) 
     elif _name == "usps":
-        trainset = torchvision.datasets.USPS(root=DATAPATH+"/usps/", train=train, 
+        trainset = torchvision.datasets.USPS(root=os.path.join(path, "usps"), train=train, 
                                              download=True, transform=transform) 
     elif _name == "svhn":
         if train:
             split_ = 'train'
         else:
             split_ = 'test'
-        trainset = torchvision.datasets.SVHN(root=DATAPATH+"/svhn/", split=split_, 
+        trainset = torchvision.datasets.SVHN(root=os.path.join(path, "svhn"), split=split_, 
                                              download=True, transform=transform)
         trainset.targets = trainset.labels
         trainset.classes = np.arange(10)
     elif _name == "stl10":
-        trainset = torchvision.datasets.STL10(root=DATAPATH+"/stl10/", split='train', 
+        trainset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='train', 
                                               transform=transform, download=True)
-        testset = torchvision.datasets.STL10(root=DATAPATH+"/stl10/", split='test', 
+        testset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='test', 
                                              transform=transform, download=True)
         if not train:
             trainset.targets = trainset.labels

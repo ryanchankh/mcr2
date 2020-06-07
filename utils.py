@@ -4,9 +4,6 @@ import json
 import numpy as np
 import torch
 
-from sklearn.metrics.cluster import supervised
-from scipy.optimize import linear_sum_assignment
-
 
 def sort_dataset(data, labels, num_classes=10, stack=False):
     sorted_data = [[] for _ in range(num_classes)]
@@ -31,15 +28,7 @@ def init_pipeline(model_dir, headers=None):
         headers = ["epoch", "step", "loss", "discrimn_loss_e", "compress_loss_e", 
             "discrimn_loss_t",  "compress_loss_t"]
     create_csv(model_dir, 'losses.csv', headers)
-
     print("project dir: {}".format(model_dir))
-
-
-def dataset_per_class(images, labels, num_classes):
-    new_images = [[] for _ in range(num_classes)]
-    for i, lbl in enumerate(labels):
-        new_images[lbl].append(images[i])
-    return np.array(new_images)
 
 
 def create_csv(model_dir, filename, headers):
@@ -55,6 +44,14 @@ def save_params(model_dir, params):
     path = os.path.join(model_dir, 'params.json')
     with open(path, 'w') as f:
         json.dump(params, f, indent=2, sort_keys=True)
+
+
+def update_params(model_dir, pretrain_dir):
+    params = load_params(model_dir)
+    old_params = load_params(pretrain_dir)
+    params['arch'] = old_params["arch"]
+    params['fd'] = old_params['fd']
+    save_params(model_dir, params)
 
 
 def load_params(model_dir):
@@ -87,8 +84,9 @@ def compute_accuracy(y_pred, y_true):
 
 
 def clustering_accuracy(labels_true, labels_pred):
+    from sklearn.metrics.cluster import supervised
+    from scipy.optimize import linear_sum_assignment
     labels_true, labels_pred = supervised.check_clusterings(labels_true, labels_pred)
-    # value = supervised.contingency_matrix(labels_true, labels_pred, sparse=False)
     value = supervised.contingency_matrix(labels_true, labels_pred)
     [r, c] = linear_sum_assignment(-value)
     return value[r, c].sum() / len(labels_true)

@@ -6,7 +6,7 @@ from torch.optim import SGD, Adam
 
 import train_func as tf
 from augmentloader import AugmentLoader
-from loss import CompressibleLoss
+from loss import MaximalCodingRateReduction
 import utils
 
 
@@ -46,8 +46,12 @@ parser.add_argument('--pretrain_dir', type=str, default=None,
                     help='load pretrained checkpoint for assigning labels')
 parser.add_argument('--pretrain_epo', type=int, default=None,
                     help='load pretrained epoch for assigning labels')
-parser.add_argument('--savedir', type=str, default='./saved_models/',
+parser.add_argument('--savedir', type=str, default='/mnt/raid/user/yaodong/saved_models/',
                     help='base directory for saving PyTorch model. (default: ./saved_models/)')
+parser.add_argument('--datadir', type=str, default='./data/',
+                    help='base directory for saving PyTorch model. (default: ./data/)')
+parser.add_argument('--gpu', type=str,
+                    help='gpu id for training using GPUs')
 args = parser.parse_args()
 
 
@@ -57,7 +61,6 @@ model_dir = os.path.join(args.savedir,
                     args.arch, args.fd, args.data, args.epo, args.bs, args.aug, args.transform,
                     args.lr, args.mom, args.wd, args.gam1, args.gam2, args.eps, args.tail))
 utils.init_pipeline(model_dir)
-utils.save_params(model_dir, vars(args))
 
 
 ## per model functions
@@ -82,18 +85,20 @@ def lr_schedule(epoch, optimizer):
 
 ## Prepare for Training
 if args.pretrain_dir is not None:
-    net, _ = tf.load_checkpoint(args.pretrain_dir, args.pretrain_epo)  
+    net, _ = tf.load_checkpoint(args.pretrain_dir, args.pretrain_epo)
+    utils.update_params(model_dir, args.pretrain_dir)  
 else:
     net = tf.load_architectures(args.arch, args.fd)
 transforms = tf.load_transforms(args.transform)
-trainset = tf.load_trainset(args.data)
+trainset = tf.load_trainset(args.data, path=args.datadir)
 trainloader = AugmentLoader(trainset,
                             transforms=transforms,
                             sampler=args.sampler,
                             batch_size=args.bs,
                             num_aug=args.aug)
-criterion = CompressibleLoss(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
+criterion = MaximalCodingRateReduction(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
+utils.save_params(model_dir, vars(args))
 
 
 ## Training
