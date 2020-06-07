@@ -24,13 +24,12 @@ if __name__ == '__main__':
     parser.add_argument('--tail', type=str, default='',
                     help='extra information to add to file name')
 
-
     args = parser.parse_args()
     params = utils.load_params(args.model_dir)
     net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
     train_transforms = tf.load_transforms('test')
     trainset = tf.load_trainset(params['data'], train_transforms, train=True)
-    trainloader = DataLoader(trainset, batch_size=500, num_workers=4)
+    trainloader = DataLoader(trainset, batch_size=200, num_workers=4)
     features, labels = tf.get_features(net, trainloader)
 
     if not os.path.exists(args.save_dir):
