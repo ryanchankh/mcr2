@@ -1,5 +1,5 @@
 # Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction
-This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](link). This repository is organized by [Ryan Chan](https://github.com.ryanchankh) (ryanchankh@berkeley.edu) and [Yaodong Yu](https://github.com/yaodongyu) (yaodong_yu@berkeley.edu).
+This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](link).
 
 ## Requirements
 - This codebase is written for `python3`.
