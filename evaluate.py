@@ -59,41 +59,6 @@ def nearsub(args, train_features, train_labels, test_features, test_labels):
     print('SVD: {}'.format(acc_svd))
     return acc_pca
 
-def nearsub2(args, train_features, train_labels, test_features, test_labels):
-    scores_pca = []
-    scores_svd = []
-    num_classes = train_labels.numpy().max() + 1
-    features_sort, _ = utils.sort_dataset(train_features.numpy(), train_labels.numpy(), num_classes=num_classes, stack=False)
-    for j in range(num_classes):
-        subspace_coarse = PCA(n_components=args.n_comp).fit(features_sort[j]).components_.T
-        mean_coarse = np.mean(features_sort[j], axis=0)
-        subscore = np.linalg.norm((np.eye(params["fd"]) - subspace_coarse @ subspace_coarse.T) @ (train_features.numpy() - mean_coarse).T, ord=2, axis=0)
-        subidx = np.argsort(subscore, axis=0)[:100]
-        subfeatures = train_features[subidx]
-        subspace = PCA(n_components=args.n_comp).fit(subfeatures).components_.T
-        mean = np.mean(subfeatures, axis=0)
-        score_pca_j = np.linalg.norm((np.eye(params["fd"]) - subspace @ subspace.T) @ (test_features.numpy() - mean).T, ord=2, axis=0)
-        
-
-        subspace_coarse = TruncatedSVD(n_components=args.n_comp).fit(features_sort[j]).components_.T
-        subscore = np.linalg.norm((np.eye(params["fd"]) - subspace_coarse @ subspace_coarse.T) @ (train_features.numpy()).T, ord=2, axis=0)
-        subidx = np.argsort(subscore, axis=0)[:100]
-        subfeatures = train_features[subidx]
-        subspace = TruncatedSVD(n_components=args.n_comp).fit(subfeatures).components_.T
-        score_svd_j = np.linalg.norm((np.eye(params["fd"]) - subspace @ subspace.T) @ (test_features.numpy()).T, ord=2, axis=0)
-        
-        scores_pca.append(score_pca_j)
-        scores_svd.append(score_svd_j)
-    test_predict_pca = np.argmin(scores_pca, axis=0)
-    test_predict_svd = np.argmin(scores_svd, axis=0)
-    acc_pca = utils.compute_accuracy(test_predict_pca, test_labels.numpy())
-    acc_svd = utils.compute_accuracy(test_predict_svd, test_labels.numpy())
-    print('PCA: {}'.format(acc_pca))
-    print('SVD: {}'.format(acc_svd))
-    return acc_pca
-
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Evaluation')
@@ -101,7 +66,6 @@ if __name__ == '__main__':
     parser.add_argument('--svm', help='evaluate using SVM', action='store_true')
     parser.add_argument('--knn', help='evaluate using kNN measuring cosine similarity', action='store_true')
     parser.add_argument('--nearsub', help='evaluate using Nearest Subspace', action='store_true')
-    parser.add_argument('--nearsub2', help='evaluate using Nearest Subspace', action='store_true')
     parser.add_argument('--kmeans', help='evaluate using KMeans', action='store_true')
     parser.add_argument('--ensc', help='evaluate using Elastic Net Subspace Clustering', action='store_true')
     parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
@@ -140,8 +104,6 @@ if __name__ == '__main__':
         knn(args, train_features, train_labels, test_features, test_labels)
     if args.nearsub:
         nearsub(args, train_features, train_labels, test_features, test_labels)
-    if args.nearsub2:
-        nearsub2(args, train_features, train_labels, test_features, test_labels)
     if args.kmeans:
         kmeans(args, train_features, train_labels)
     if args.ensc:
