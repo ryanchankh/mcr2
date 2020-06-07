@@ -11,13 +11,13 @@ This repository is the official implementation of [Learning Diverse and Discrimi
 #### Contrastive Setting
 
 ## Evaluation
-Methods available are: `svm`, `knn`, `nearsub`, `kmeans`, `ensc`. Each method also has options for testing hyperparameters, such as `--k` for top `k` components in kNN. Methods can also be chained.
+Methods available are: `svm`, `knn`, `nearsub`, `kmeans`, `ensc`. Each method also has options for testing hyperparameters, such as `--k` for top `k` components in kNN. Methods can also be chained. Checkpoint can also be specified using `--epoch` option.
 
 An example for evaluation is:
 ```
 python3 evaluate.py --knn --nearsub --k 10 --model_dir saved_models/sup_resnet18+128_cifar10_epo500_bs1000_lr0.001_mom0.9_wd0.0005_gam11.0_gam210.0_eps0.5_lcr0
 ```
-,which runs kNN with top 10 components and nearest subspace on model trained in `model_dir`
+, which runs kNN with top 10 components and nearest subspace on the latest checkpoint in `model_dir`
 
 Refer to [code](./evaluate.py) for more implementation details. 
 
