@@ -15,7 +15,7 @@ Methods available are: `svm`, `knn`, `nearsub`, `kmeans`, `ensc`. Each method al
 
 An example for evaluation is:
 ```
-python3 evaluation.py --knn --nearsub -k 10 --model_dir saved_models/sup_resnet18+128_cifar10_epo500_bs1000_lr0.001_mom0.9_wd0.0005_gam11.0_gam210.0_eps0.5_lcr0
+python3 evaluate.py --knn --nearsub --k 10 --model_dir saved_models/sup_resnet18+128_cifar10_epo500_bs1000_lr0.001_mom0.9_wd0.0005_gam11.0_gam210.0_eps0.5_lcr0
 ```
 ,which runs kNN with top 10 components and nearest subspace on model trained in `model_dir`
 
