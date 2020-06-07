@@ -43,9 +43,9 @@ parser.add_argument('--tail', type=str, default='',
                     help='extra information to add to folder name')
 parser.add_argument('--transform', type=str, default='default',
                     help='transform applied to trainset (default: default')
-parser.add_argument('--savedir', type=str, default='./saved_models/',
+parser.add_argument('--save_dir', type=str, default='./saved_models/',
                     help='base directory for saving PyTorch model. (default: ./saved_models/)')
-parser.add_argument('--datadir', type=str, default='./data/',
+parser.add_argument('--data_dir', type=str, default='./data/',
                     help='base directory for saving PyTorch model. (default: ./data/)')
 parser.add_argument('--pretrain_dir', type=str, default=None,
                     help='load pretrained checkpoint for assigning labels')
@@ -57,7 +57,7 @@ args = parser.parse_args()
 
 
 ## Pipelines Setup
-model_dir = os.path.join(args.savedir,
+model_dir = os.path.join(args.save_dir,
                'sup_{}+{}_{}_epo{}_bs{}_lr{}_mom{}_wd{}_gam1{}_gam2{}_eps{}_lcr{}{}'.format(
                     args.arch, args.fd, args.data, args.epo, args.bs, args.lr, args.mom, 
                     args.wd, args.gam1, args.gam2, args.eps, args.lcr, args.tail))
@@ -83,7 +83,7 @@ if args.pretrain_dir is not None:
 else:
     net = tf.load_architectures(args.arch, args.fd)
 transforms = tf.load_transforms(args.transform)
-trainset = tf.load_trainset(args.data, transforms, path=args.datadir)
+trainset = tf.load_trainset(args.data, transforms, path=args.data_dir)
 trainset = tf.corrupt_labels(trainset, args.lcr, args.lcs)
 trainloader = DataLoader(trainset, batch_size=args.bs, drop_last=True, num_workers=4)
 criterion = MaximalCodingRateReduction(gam1=args.gam1, gam2=args.gam2, eps=args.eps)

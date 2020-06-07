@@ -46,9 +46,9 @@ parser.add_argument('--pretrain_dir', type=str, default=None,
                     help='load pretrained checkpoint for assigning labels')
 parser.add_argument('--pretrain_epo', type=int, default=None,
                     help='load pretrained epoch for assigning labels')
-parser.add_argument('--savedir', type=str, default='/mnt/raid/user/yaodong/saved_models/',
+parser.add_argument('--save_dir', type=str, default='/mnt/raid/user/yaodong/saved_models/',
                     help='base directory for saving PyTorch model. (default: ./saved_models/)')
-parser.add_argument('--datadir', type=str, default='./data/',
+parser.add_argument('--data_dir', type=str, default='./data/',
                     help='base directory for saving PyTorch model. (default: ./data/)')
 parser.add_argument('--tail', type=str, default='',
                     help='extra information to add to folder name')
@@ -58,7 +58,7 @@ args = parser.parse_args()
 
 
 ## Pipelines Setup
-model_dir = os.path.join(args.savedir,
+model_dir = os.path.join(args.save_dir,
                'contrast_{}+{}_{}_epo{}_bs{}+{}_aug{}+{}_lr{}_mom{}_wd{}_gam2{}_gam3{}_eps{}{}'.format(
                     args.arch, args.fd, args.data, args.epo, args.bs, args.sampler, args.aug, args.transform, args.lr, 
                     args.mom, args.wd, args.gam2, args.gam3, args.eps, args.loss, args.tail))
@@ -84,7 +84,7 @@ if args.pretrain_dir is not None:
 else:
     net = tf.load_architectures(args.arch, args.fd)
 transforms = tf.load_transforms(args.transform)
-trainset = tf.load_trainset(args.data, path=args.datadir)
+trainset = tf.load_trainset(args.data, path=args.data_dir)
 trainloader = AugmentLoader(trainset,
                             transforms=transforms,
                             sampler=args.sampler,
