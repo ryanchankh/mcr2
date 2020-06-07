@@ -256,12 +256,6 @@ def elastic_net_subspace_clustering(X, gamma=50.0, gamma_nz=True, tau=1.0, algor
     -------
     representation_matrix_ : csr matrix, shape: n_samples by n_samples
         The self-representation matrix.
-	
-    References
-    -----------	
-	[1] C. You, C.-G. Li, D. Robinson, R. Vidal, Oracle Based Active Set Algorithm for Scalable Elastic Net Subspace Clustering, CVPR 2016
-	[2] E. Elhaifar, R. Vidal, Sparse Subspace Clustering: Algorithm, Theory, and Applications, TPAMI 2013
-    [3] C. Lu, et al. Robust and efficient subspace segmentation via least squares regression, ECCV 2012
     """
     if algorithm in ('lasso_lars', 'lasso_cd') and tau < 1.0 - 1.0e-10:  
         warnings.warn('algorithm {} cannot handle tau smaller than 1. Using tau = 1'.format(algorithm))
@@ -381,11 +375,6 @@ class ElasticNetSubspaceClustering(SelfRepresentation):
         ``fit`` or ``fit_self_representation``.
     labels_ :
         Labels of each point. Available only if after calling ``fit``
-    References
-    -----------	
-	[1] C. You, C.-G. Li, D. Robinson, R. Vidal, Oracle Based Active Set Algorithm for Scalable Elastic Net Subspace Clustering, CVPR 2016
-	[2] E. Elhaifar, R. Vidal, Sparse Subspace Clustering: Algorithm, Theory, and Applications, TPAMI 2013
-    [3] C. Lu, et al. Robust and efficient subspace segmentation via least squares regression, ECCV 2012
     """
     def __init__(self, n_clusters=8, affinity='symmetrize', random_state=None, n_init=20, n_jobs=1, gamma=50.0, gamma_nz=True, tau=1.0, 
                  algorithm='lasso_lars', active_support=True, active_support_params=None, n_nonzero=50):
@@ -423,10 +412,6 @@ def sparse_subspace_clustering_orthogonal_matching_pursuit(X, n_nonzero=10, thr=
     -------
     representation_matrix_ : csr matrix, shape: n_samples by n_samples
         The self-representation matrix.
-	
-    References
-    -----------			
-    C. You, D. Robinson, R. Vidal, Scalable Sparse Subspace Clustering by Orthogonal Matching Pursuit, CVPR 2016
     """	
     n_samples = X.shape[0]
     rows = np.zeros(n_samples * n_nonzero, dtype = int)
@@ -489,9 +474,6 @@ class SparseSubspaceClusteringOMP(SelfRepresentation):
         ``fit`` or ``fit_self_representation``.
     labels_ :
         Labels of each point. Available only if after calling ``fit``
-    References
-    -----------	
-    C. You, D. Robinson, R. Vidal, Scalable Sparse Subspace Clustering by Orthogonal Matching Pursuit, CVPR 2016
     """
     def __init__(self, n_clusters=8, affinity='symmetrize', random_state=None, n_init=10, n_jobs=1, n_nonzero=10, thr=1.0e-6):
         self.n_nonzero = n_nonzero
@@ -519,10 +501,6 @@ def least_squares_subspace_clustering(X, gamma=10.0, exclude_self=False):
     -------
     representation_matrix_ : shape n_samples by n_samples
         The self-representation matrix.
-		
-    References
-    -----------	
-    C. Lu, et al. Robust and efficient subspace segmentation via least squares regression, ECCV 2012
     """
     n_samples, n_features = X.shape
   
@@ -570,10 +548,6 @@ class LeastSquaresSubspaceClustering(SelfRepresentation):
         ``fit`` or ``fit_self_representation``.
     labels_ :
         Labels of each point. Available only if after calling ``fit``
-		
-    References
-    -----------	
-    C. Lu, et al. Robust and efficient subspace segmentation via least squares regression, ECCV 2012
     """
     def __init__(self, n_clusters=8, affinity='symmetrize', random_state=None, n_init=None, n_jobs=1, gamma=10.0, exclude_self=False):
         self.gamma = gamma
