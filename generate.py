@@ -8,7 +8,7 @@ import pandas as pd
 from torch.utils.data import DataLoader
 
 from evaluate import svm
-from loss import CompressibleLoss
+from loss import MaximalCodingRateReduction
 import train_func as tf
 import utils
 
@@ -32,7 +32,7 @@ def gen_testloss(args):
     testloader = DataLoader(testset, batch_size=params['bs'], shuffle=False, num_workers=4)
     
     # save loss
-    criterion = CompressibleLoss(gam1=params['gam1'], gam2=params['gam2'], eps=params['eps'])
+    criterion = MaximalCodingRateReduction(gam1=params['gam1'], gam2=params['gam2'], eps=params['eps'])
     for epoch, ckpt_path in enumerate(ckpt_paths):
         net, epoch = tf.load_checkpoint(args.model_dir, epoch=epoch, eval_=True)
         for step, (batch_imgs, batch_lbls) in enumerate(testloader):
