@@ -67,7 +67,7 @@ utils.init_pipeline(model_dir)
 def lr_schedule2(epoch, optimizer):
     """decrease the learning rate"""
     lr = list(iter(optimizer.param_groups))[0]['lr']
-    if epoch == 7 or epoch == 10:
+    if epoch != 0 and epoch % 30 == 0:
         lr = lr * 0.1
         print(f'current learning rate: {lr}')
     for param_group in optimizer.param_groups:
@@ -103,7 +103,7 @@ utils.save_params(model_dir, vars(args))
 
 ## Training
 for epoch in range(args.epo):
-    lr_schedule(epoch, optimizer)
+    lr_schedule2(epoch, optimizer)
     for step, (batch_imgs, _, batch_idx) in enumerate(trainloader):
         batch_features = net(batch_imgs.cuda())
         loss, loss_empi, loss_theo = criterion(batch_features, batch_idx)
