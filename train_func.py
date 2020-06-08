@@ -66,7 +66,7 @@ def load_architectures(name, dim):
     return net
 
 
-def load_trainset(name, transform=None, train=True, path="./data/"):
+def load_trainset(name, transform=None, train=True, combine=True, path="./data/"):
     _name = name.lower()
     if _name == "cifar10":
         trainset = torchvision.datasets.CIFAR10(root=os.path.join(path, "cifar10"), train=train,
@@ -100,6 +100,9 @@ def load_trainset(name, transform=None, train=True, path="./data/"):
         if not train:
             trainset.targets = trainset.labels
             return testset
+        elif not combine:
+            trainset.targets = trainset.labels
+            return trainset
         else:
             trainset.data = np.concatenate([trainset.data, testset.data])
             trainset.labels = trainset.labels.tolist() + testset.labels.tolist()
