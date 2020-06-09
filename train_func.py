@@ -60,13 +60,28 @@ def load_architectures(name, dim):
     elif _name == "resnet18stlsmall2":
         from architectures.resnet_stl import ResNet18STLsmall2
         net = ResNet18STLsmall2(dim)
+    elif _name == "vgg11":
+        from architectures.vgg_cifar import VGG11
+        net = VGG11(dim)
+    elif _name == "resnext29_2x64d":
+        from architectures.resnext_cifar import ResNeXt29_2x64d
+        net = ResNeXt29_2x64d(dim)
+    elif _name == "resnext29_4x64d":
+        from architectures.resnext_cifar import ResNeXt29_4x64d
+        net = ResNeXt29_4x64d(dim)
+    elif _name == "resnext29_8x64d":
+        from architectures.resnext_cifar import ResNeXt29_8x64d
+        net = ResNeXt29_8x64d(dim)
+    elif _name == "resnext29_32x4d":
+        from architectures.resnext_cifar import ResNeXt29_32x4d
+        net = ResNeXt29_32x4d(dim)
     else:
-        raise NameError("{} not found in archiectures.".format(name))
+        raise NameError("{} not found in architectures.".format(name))
     net = torch.nn.DataParallel(net).cuda()
     return net
 
 
-def load_trainset(name, transform=None, train=True, combine=True, path="./data/"):
+def load_trainset(name, transform=None, train=True, path="./data/"):
     _name = name.lower()
     if _name == "cifar10":
         trainset = torchvision.datasets.CIFAR10(root=os.path.join(path, "cifar10"), train=train,
@@ -98,14 +113,20 @@ def load_trainset(name, transform=None, train=True, combine=True, path="./data/"
         testset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='test', 
                                              transform=transform, download=True)
         if not train:
-            trainset.targets = trainset.labels
             return testset
-        elif not combine:
-            trainset.targets = trainset.labels
-            return trainset
         else:
             trainset.data = np.concatenate([trainset.data, testset.data])
             trainset.labels = trainset.labels.tolist() + testset.labels.tolist()
+            trainset.targets = trainset.labels
+            return trainset
+    elif _name == "stl10_sup":
+        trainset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='train', 
+                                              transform=transform, download=True)
+        testset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='test', 
+                                             transform=transform, download=True)
+        if not train:
+            return testset
+        else:
             trainset.targets = trainset.labels
             return trainset
     else:
