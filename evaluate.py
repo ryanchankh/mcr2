@@ -78,6 +78,7 @@ if __name__ == '__main__':
                         help='tau paramter for subspace clustering (default: 1.0)')
     parser.add_argument('--n_comp', type=int, default=30, help='number of components for PCA (default: 30)')
     parser.add_argument('--save', action='store_true', help='save labels')
+    parser.add_argument('--data_dir', default='./data/', help='path to dataset')
     args = parser.parse_args()
 
     ## load model, train data, and test data
@@ -86,7 +87,7 @@ if __name__ == '__main__':
     net = net.cuda().eval()
     
     train_transforms = tf.load_transforms('test')
-    trainset = tf.load_trainset(params['data'], train_transforms, train=True)
+    trainset = tf.load_trainset(params['data'], train_transforms, train=True, path=args.data_dir)
     if 'lcr' in params.keys(): # supervised corruption case
         trainset = tf.corrupt_labels(trainset, params['lcr'], params['lcs'])
     new_labels = trainset.targets
