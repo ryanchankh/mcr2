@@ -119,7 +119,7 @@ def load_trainset(name, transform=None, train=True, path="./data/"):
             trainset.labels = trainset.labels.tolist() + testset.labels.tolist()
             trainset.targets = trainset.labels
             return trainset
-    elif _name == "stl10_sup":
+    elif _name == "stl10sup":
         trainset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='train', 
                                               transform=transform, download=True)
         testset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='test', 
