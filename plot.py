@@ -10,7 +10,6 @@ from sklearn.decomposition import PCA, TruncatedSVD
 from torch.utils.data import DataLoader
 
 from generate import gen_testloss, gen_accuracy
-from loss import CompressibleLoss
 import train_func as tf
 import utils
 
