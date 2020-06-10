@@ -446,6 +446,80 @@ def plot_traintest(args, path_test):
     print("Plot saved to: {}".format(file_name))
     plt.close()
     
+def plot_nearest_component(args, features, labels, epoch, trainset):
+    ## perform PCA on features
+    features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
+                            num_classes=len(trainset.classes), stack=False)
+    data_sort, _ = utils.sort_dataset(trainset.data, labels.numpy(), 
+                            num_classes=len(trainset.classes), stack=False)
+    nearest_data = []
+    for c in range(len(trainset.classes)):
+        pca = TruncatedSVD(n_components=10, random_state=10).fit(features_sort[c])
+        proj = features_sort[c] @ pca.components_.T
+        img_idx = np.argmax(np.abs(proj), axis=0)
+        nearest_data.append(np.array(data_sort[c])[img_idx])
+    
+    fig, ax = plt.subplots(ncols=10, nrows=10, figsize=(10, 10))
+    for r in range(10):
+        for c in range(10):
+            ax[r, c].imshow(nearest_data[r][c])
+            ax[r, c].set_axis_off()
+    plt.xlabel("per component")
+    plt.ylabel("per class")
+    
+    ## save
+    save_dir = os.path.join(args.model_dir, 'figures', 'pca')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    file_name = os.path.join(save_dir, f"nearest_data.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(save_dir, f"nearest_data.pdf")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    plt.close()
+
+def plot_nearest_component_class(args, features, labels, epoch, trainset):
+    ## perform PCA on features
+    features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
+                            num_classes=len(trainset.classes), stack=False)
+    data_sort, _ = utils.sort_dataset(trainset.data, labels.numpy(), 
+                            num_classes=len(trainset.classes), stack=False)
+    nearest_data = []
+    nearest_val = []
+    pca = TruncatedSVD(n_components=10, random_state=10).fit(features_sort[0])
+    class_ = 7
+    for j in range(8):
+        proj = features_sort[class_] @ pca.components_.T[:, j]
+        img_idx = np.argsort(np.abs(proj), axis=0)[::-1][:10]
+        nearest_val.append(proj[img_idx])
+        nearest_data.append(np.array(data_sort[class_])[img_idx])
+    
+    fig, ax = plt.subplots(ncols=10, nrows=8, figsize=(10, 10))
+    for r in range(8):
+        for c in range(10):
+            ax[r, c].imshow(nearest_data[r][c])
+            ax[r, c].set_axis_off()
+            ax[r, c].set_xlabel(f"proj: {nearest_val[r][c]:.2f}")
+
+            if c == 0:
+                ax[r, c].set_ylabel(f"comp {r}")
+    
+    ## save
+    save_dir = os.path.join(args.model_dir, 'figures', 'pca')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    file_name = os.path.join(save_dir, f"nearest_class{class_}.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(save_dir, f"nearest_class{class_}.pdf")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    plt.close()
+
+
+
+
 
 def plot_pca_epoch(args):
     EPOCHS = [0, 10, 100, 500]
@@ -611,6 +685,8 @@ if __name__ == "__main__":
     parser.add_argument('--hist_paper', help='plot histogram of cosine similarity of features', action='store_true')
     parser.add_argument('--pca', help='plot PCA singular values of feautres', action='store_true')
     parser.add_argument('--pca_epoch', help='plot PCA singular for different epochs', action='store_true')
+    parser.add_argument('--near_comp', help='plot nearest component', action='store_true')
+    parser.add_argument('--near_comp_class', help='plot nearest component', action='store_true')
     parser.add_argument('--acc', help='plot accuracy over epochs', action='store_true')
     parser.add_argument('--traintest', help='plot train and test loss comparison plot', action='store_true')
     parser.add_argument('--heat', help='plot heatmap of cosine similarity between samples', action='store_true')
@@ -638,8 +714,7 @@ if __name__ == "__main__":
             gen_accuracy(args)
         plot_accuracy(args, path)
 
-
-    if args.pca or args.hist or args.hist_all or args.hist_paper or args.heat:
+    if args.pca or args.hist or args.hist_all or args.hist_paper or args.heat or args.near_comp or args.near_comp_class:
         ## load data and model
         params = utils.load_params(args.model_dir)
         net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
@@ -652,6 +727,10 @@ if __name__ == "__main__":
 
     if args.pca:
         plot_pca(args, features, labels, epoch)
+    if args.near_comp:
+        plot_nearest_component(args, features, labels, epoch, trainset)
+    if args.near_comp_class:
+        plot_nearest_component_class(args, features, labels, epoch, trainset)
     if args.hist:
         plot_hist(args, features, labels, epoch)
     if args.hist_all:
