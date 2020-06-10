@@ -480,42 +480,48 @@ def plot_nearest_component(args, features, labels, epoch, trainset):
     plt.close()
 
 def plot_nearest_component_class(args, features, labels, epoch, trainset):
-    ## perform PCA on features
+    save_dir = os.path.join(args.model_dir, 'figures', 'nearcomp')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=len(trainset.classes), stack=False)
     data_sort, _ = utils.sort_dataset(trainset.data, labels.numpy(), 
                             num_classes=len(trainset.classes), stack=False)
-    nearest_data = []
-    nearest_val = []
-    pca = TruncatedSVD(n_components=10, random_state=10).fit(features_sort[0])
-    class_ = 7
-    for j in range(8):
-        proj = features_sort[class_] @ pca.components_.T[:, j]
-        img_idx = np.argsort(np.abs(proj), axis=0)[::-1][:10]
-        nearest_val.append(proj[img_idx])
-        nearest_data.append(np.array(data_sort[class_])[img_idx])
-    
-    fig, ax = plt.subplots(ncols=10, nrows=8, figsize=(10, 10))
-    for r in range(8):
-        for c in range(10):
-            ax[r, c].imshow(nearest_data[r][c])
-            ax[r, c].set_axis_off()
-            ax[r, c].set_xlabel(f"proj: {nearest_val[r][c]:.2f}")
 
-            if c == 0:
-                ax[r, c].set_ylabel(f"comp {r}")
-    
-    ## save
-    save_dir = os.path.join(args.model_dir, 'figures', 'pca')
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    file_name = os.path.join(save_dir, f"nearest_class{class_}.png")
-    fig.savefig(file_name)
-    print("Plot saved to: {}".format(file_name))
-    file_name = os.path.join(save_dir, f"nearest_class{class_}.pdf")
-    fig.savefig(file_name)
-    print("Plot saved to: {}".format(file_name))
-    plt.close()
+    for class_ in range(len(trainset.classes)):
+        nearest_data = []
+        nearest_val = []
+        pca = TruncatedSVD(n_components=10, random_state=10).fit(features_sort[class_])
+        for j in range(8):
+            proj = features_sort[class_] @ pca.components_.T[:, j]
+            img_idx = np.argsort(np.abs(proj), axis=0)[::-1][:10]
+            nearest_val.append(proj[img_idx])
+            nearest_data.append(np.array(data_sort[class_])[img_idx])
+        
+        fig, ax = plt.subplots(ncols=10, nrows=8, figsize=(10, 10))
+        for r in range(8):
+            for c in range(10):
+                ax[r, c].imshow(nearest_data[r][c])
+                ax[r, c].set_xticks([])
+                ax[r, c].set_yticks([])
+                ax[r, c].spines['top'].set_visible(False)
+                ax[r, c].spines['right'].set_visible(False)
+                ax[r, c].spines['bottom'].set_linewidth(False)
+                ax[r, c].spines['left'].set_linewidth(False)
+                ax[r, c].set_xlabel(f"proj: {nearest_val[r][c]:.2f}")
+                if c == 0:
+                    ax[r, c].set_ylabel(f"comp {r}")
+        
+        fig.tight_layout()
+        ## save
+        file_name = os.path.join(save_dir, f"nearest_class{class_}.png")
+        fig.savefig(file_name)
+        print("Plot saved to: {}".format(file_name))
+        file_name = os.path.join(save_dir, f"nearest_class{class_}.pdf")
+        fig.savefig(file_name)
+        print("Plot saved to: {}".format(file_name))
+        plt.close()
 
 
 
