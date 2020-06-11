@@ -14,6 +14,16 @@ import utils
 
 
 def load_architectures(name, dim):
+    """Returns a network architecture.
+    
+    Parameters:
+        name (str): name of the architecture
+        dim (int): feature dimension of vector presentation
+    
+    Returns:
+        net (torch.nn.Module)
+        
+    """
     _name = name.lower()
     if _name == "resnet18":
         from architectures.resnet_cifar import ResNet18
@@ -82,6 +92,17 @@ def load_architectures(name, dim):
 
 
 def load_trainset(name, transform=None, train=True, path="./data/"):
+    """Loads a dataset for training and testing. If augmentloader is used, transform should be None.
+    
+    Parameters:
+        name (str): name of the dataset
+        transform (torchvision.transform): transform to be applied
+        train (bool): load trainset or testset
+        path (str): path to dataset base path
+
+    Returns:
+        dataset (torch.data.dataset)
+    """
     _name = name.lower()
     if _name == "cifar10":
         trainset = torchvision.datasets.CIFAR10(root=os.path.join(path, "cifar10"), train=train,
@@ -135,6 +156,12 @@ def load_trainset(name, transform=None, train=True, path="./data/"):
 
 
 def load_transforms(name):
+    """Load data transformations.
+    
+    Note:
+        - Gaussian Blur is defined at the bottom of this file.
+    
+    """
     _name = name.lower()
     if _name == "default":
         transform = transforms.Compose([
@@ -200,6 +227,19 @@ def load_transforms(name):
 
 
 def load_checkpoint(model_dir, epoch=None, eval_=False):
+    """Load checkpoint from model directory. Checkpoints should be stored in 
+    `model_dir/checkpoints/model-epochX.ckpt`, where `X` is the epoch number.
+    
+    Parameters:
+        model_dir (str): path to model directory
+        epoch (int): epoch number; set to None for last available epoch
+        eval_ (bool): PyTorch evaluation mode. set to True for testing
+        
+    Returns:
+        net (torch.nn.Module): PyTorch checkpoint at `epoch`
+        epoch (int): epoch number
+    
+    """
     if epoch is None: # get last epoch
         ckpt_dir = os.path.join(model_dir, 'checkpoints')
         epochs = [int(e[11:-3]) for e in os.listdir(ckpt_dir) if e[-3:] == ".pt"]
@@ -217,7 +257,17 @@ def load_checkpoint(model_dir, epoch=None, eval_=False):
 
     
 def get_features(net, trainloader, verbose=True):
-    '''extract all features out into one single batch. '''
+    '''Extract all features out into one single batch. 
+    
+    Parameters:
+        net (torch.nn.Module): get features using this model
+        trainloader (torchvision.dataloader): dataloader for loading data
+        verbose (bool): shows loading staus bar
+
+    Returns:
+        features (torch.tensor): with dimension (num_samples, feature_dimension)
+        labels (torch.tensor): with dimension (num_samples, )
+    '''
     features = []
     labels = []
     if verbose:
@@ -231,36 +281,20 @@ def get_features(net, trainloader, verbose=True):
     return torch.cat(features), torch.cat(labels)
     
 
-def get_plabels(net, data, n_clusters=10, gamma=100):
-    net.eval()
-    transform = load_transforms('test')
-    trainset = load_trainset(data, transform)
-    trainloader = DataLoader(trainset, batch_size=500, num_workers=4)
-    features, labels = get_features(net, trainloader)
-    clustermd = ElasticNetSubspaceClustering(n_clusters=n_clusters, algorithm='spams', 
-                                                gamma=gamma)
-    clustermd.fit(features)
-    plabels = clustermd.labels_
-    accuracy = clustering_accuracy(labels, plabels)
-    net.train()
-    return plabels, accuracy
-
-
-# def corrupt_labels(trainset, ratio, seed):
-#     assert 0 <= ratio < 1, 'ratio should be between 0 and 1'
-#     num_classes = len(trainset.classes)
-#     num_corrupt = int(len(trainset.targets) * ratio)
-#     np.random.seed(seed)
-#     labels = trainset.targets
-#     indices = np.random.choice(len(labels), size=num_corrupt, replace=False)
-#     labels_ = np.copy(labels)
-#     for idx in indices:
-#         labels_[idx] = np.random.choice(np.delete(np.arange(num_classes), labels[idx]))
-#     trainset.targets = labels_
-#     return trainset
-
-
 def corrupt_labels(trainset, ratio, seed):
+    """Corrupt labels in trainset.
+    
+    Parameters:
+        trainset (torch.data.dataset): trainset where labels is stored
+        ratio (float): ratio of labels to be corrupted. 0 to corrupt no labels; 
+                            1 to corrupt all labels
+        seed (int): random seed for reproducibility
+        
+    Returns:
+        trainset (torch.data.dataset): trainset with updated corrupted labels
+        
+    """
+
     np.random.seed(seed)
     train_labels = np.asarray(trainset.targets)
     num_classes = np.max(train_labels) + 1
@@ -275,7 +309,7 @@ def corrupt_labels(trainset, ratio, seed):
 def label_to_membership(targets, num_classes=None):
     """Generate a true membership matrix, and assign value to current Pi.
 
-    Args:
+    Parameters:
         targets (np.ndarray): matrix with one hot labels
 
     Return:
@@ -292,7 +326,7 @@ def label_to_membership(targets, num_classes=None):
 
 
 def membership_to_label(membership):
-    """Turn a membership matrix into a list of labels. """
+    """Turn a membership matrix into a list of labels."""
     _, num_classes, num_samples, _ = membership.shape
     labels = np.zeros(num_samples)
     for i in range(num_samples):
@@ -300,6 +334,7 @@ def membership_to_label(membership):
     return labels
 
 def one_hot(x, K):
+    """Turn labels x into one hot vector of K classes. """
     return np.array(x[:, None] == np.arange(K)[None, :], dtype=int)
 
 
