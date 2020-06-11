@@ -12,15 +12,17 @@ class AugmentLoader:
     """Dataloader that includes augmentation functionality.
     
     Parameters:
-        dataset (PyTorch data.dataset): trainset or testset PyTorch object
+        dataset (torch.data.dataset): trainset or testset PyTorch object
         batch_size (int): the size of each batch, including augmentations
-        sampler (str): choice of sapmler (balance or random)
+        sampler (str): choice of sampler ('balance' or 'random')
+            - 'balance': samples data such that each class has the same number of samples
+            - 'random': samples data randomly
         transforms (torchvision.transforms): Transformations applied to each augmentation
         num_aug (int): number of augmentation for each image in a batch
         shuffle (bool): shuffle data
         
     Attributes:
-        dataset (PyTorch data.dataset): trainset or testset PyTorch object
+        dataset (torch.data.dataset): trainset or testset PyTorch object
         batch_size (int): the size of each batch, including augmentations
         transforms (torchvision.transforms): Transformations applied to each augmentation
         num_aug (int): number of augmentation for each image in a batch
@@ -34,6 +36,8 @@ class AugmentLoader:
         - if num_aug = 0, then this dataloader is the same as an PyTorch dataloader, with 
         the number of original images equal to the batch size, and each image is transformed 
         using transforms from object argument.
+        - Auygmentloder first samples from the dataset num_img of images, then apply augmentation 
+        to all images. The first augmentation is always the identity transform. 
 
     """
     def __init__(self, 
@@ -106,6 +110,8 @@ class _Iter():
 
 
 class BalanceSampler():
+    """Samples data such that each class has the same number of samples. Performs sampling 
+    by first sorting data then unfiormly sample from batch with replacement."""
     def __init__(self, dataset):
         self.dataset = dataset
         self.size = len(self.dataset.targets)
@@ -148,6 +154,9 @@ class BalanceSampler():
 
 
 class RandomSampler():
+    """Samples data randomly. Sampler initializes sample indices when Sampler is instantiated.
+    Sample indices are shuffled if shuffle option is True. Performs sampling by popping off 
+    first index each time."""
     def __init__(self, dataset, size, shuffle=False):
         self.dataset = dataset
         self.size = size
