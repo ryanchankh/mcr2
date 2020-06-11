@@ -5,6 +5,7 @@ This repository is the official implementation of [Learning Diverse and Discrimi
 - This codebase is written for `python3`.
 - To install necessary python packages, run `pip install -r requirements.txt`.
 
+
 ## Training
 ### Basics
 - All functions used in training can be found in [`train_func.py`](./train_func.py), which includes: `load_checkpoint(...)`, `load_trainset(...)`, etc. For implementation details please refer to docstring. 
@@ -46,7 +47,6 @@ optional arguments:
   --pretrain_dir PRETRAIN_DIR load pretrained checkpoint for assigning labels
   --pretrain_epo PRETRAIN_EPO load pretrained epoch for assigning labels
 ```
-
 #### Examples
 ```
 $ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.0001 --save_dir ./saved_models/
@@ -60,6 +60,7 @@ $ python3 train_sup.py --arch resnet18stlsmall2 --data stl10 --fd 128 --epo 500 
 $ python3 train_sup.py --arch resnet18stlsmall2 --data stl10 --fd 128 --epo 500 --bs 1000 --eps 1 --gam1 1 --gam2 1 --lr 0.01
 $ python3 train_sup.py --arch resnet18stlsmall2 --data stl10_sup --fd 128 --epo 500 --bs 1000 --eps 1 --gam1 1 --gam2 1 --lr 0.001
 ```
+
 ### Self-supervised Setting
 #### Training Options
 ```
@@ -93,7 +94,6 @@ optional arguments:
   --save_dir SAVE_DIR   base directory for saving PyTorch model. (default: ./saved_models/)
   --data_dir DATA_DIR   base directory for saving PyTorch model. (default: ./data/)
 ```
-
 #### Examples
 ```
 $ python3 train_unsup.py --arch resnet18 --data cifar10 --fd 32 --epo 50 --bs 1000 --eps 2 --gam1 1 --gam2 0.5 --lr 0.02 --aug 50 --transform simclr
@@ -110,7 +110,6 @@ $ python3 train_selfsup.py --arch resnet18stlsmall --data stl10 --fd 128 --epo 5
 
 ## Evaluation
 Testing methods available are: `svm`, `knn`, `nearsub`, `kmeans`, `ensc`. Each method also has options for testing hyperparameters, such as `--k` for top `k` components in kNN. Methods can also be chained. Checkpoint can also be specified using `--epoch` option. Please refer to [`evaluate.py`](./evaluate.py) and [`./cluster.py`](./cluster.py) and for more implementation details. 
-
 - Command Options
 ```
 usage: evaluate.py [-h] [--model_dir MODEL_DIR] [--svm] [--knn] [--nearsub]
@@ -135,7 +134,6 @@ optional arguments:
   --save                save labels
   --data_dir DATA_DIR   path to dataset
 ```
-
 - An example for evaluation:
 ```
 $ python3 evaluate.py --knn --nearsub --k 10 --model_dir saved_models/sup_resnet18+128_cifar10_epo500_bs1000_lr0.001_mom0.9_wd0.0005_gam11.0_gam210.0_eps0.5_lcr0
