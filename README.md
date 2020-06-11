@@ -4,7 +4,6 @@ This repository is the official implementation of [Learning Diverse and Discrimi
 ## Requirements
 - This codebase is written for `python3`.
 - To install necessary python packages, run `pip install -r requirements.txt`.
-- For clustering, package `spam` is also required. See [here](https://pypi.org/project/spam/) for more details.
 
 ## Training
 ### Basics
