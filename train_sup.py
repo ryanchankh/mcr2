@@ -51,8 +51,6 @@ parser.add_argument('--pretrain_dir', type=str, default=None,
                     help='load pretrained checkpoint for assigning labels')
 parser.add_argument('--pretrain_epo', type=int, default=None,
                     help='load pretrained epoch for assigning labels')
-parser.add_argument('--gpu', type=str,
-                    help='gpu id for training using GPUs')
 args = parser.parse_args()
 
 
