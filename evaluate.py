@@ -55,14 +55,14 @@ def nearsub(args, train_features, train_labels, test_features, test_labels):
         pca = PCA(n_components=args.n_comp).fit(features_sort[j]) 
         pca_subspace = pca.components_.T
         mean = np.mean(features_sort[j], axis=0)
-        pca_j = (np.eye(params["fd"]) - pca_subspace @ pca_subspace.T) @ \
-                        (test_features.numpy() - mean).T
+        pca_j = (np.eye(params["fd"]) - pca_subspace @ pca_subspace.T) \
+                        @ (test_features.numpy() - mean).T
         score_pca_j = np.linalg.norm(pca_j, ord=2, axis=0)
 
         svd = TruncatedSVD(n_components=args.n_comp).fit(features_sort[j])
         svd_subspace = svd.components_.T
-        svd_j = (np.eye(params["fd"]) - svd_subspace @ svd_subspace.T) @ \ 
-                        (test_features.numpy()).T
+        svd_j = (np.eye(params["fd"]) - svd_subspace @ svd_subspace.T) \
+                        @ (test_features.numpy()).T
         score_svd_j = np.linalg.norm(svd_j, ord=2, axis=0)
         
         scores_pca.append(score_pca_j)
@@ -92,7 +92,7 @@ def ensc(args, train_features, train_labels, test_features, test_labels):
         tau (float): tau parameter in EnSC
 
     """
-    return ensc(args, train_features, train_labels)
+    return cluster.ensc(args, train_features, train_labels)
 
 
 

@@ -25,7 +25,6 @@ from sklearn.svm import LinearSVC
 from sklearn.cluster import KMeans
 
 import utils
-import train_func as tf
 
 
 class SelfRepresentation(BaseEstimator, ClusterMixin):
@@ -622,8 +621,7 @@ def ensc(args, train_features, train_labels, test_features=None, test_labels=Non
         tau (float): tau parameter in EnSC
 
     """
-    clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, algorithm='spams', 
-                gamma=args.gam, tau=args.tau)
+    clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, gamma=args.gam, tau=args.tau)
     clustermd.fit(train_features)
     plabels = clustermd.labels_
     acc = clustering_accuracy(train_labels, plabels)
@@ -632,39 +630,5 @@ def ensc(args, train_features, train_labels, test_features=None, test_labels=Non
     if args.save:
         np.save(os.path.join(args.model_dir, 'plabels', f'ensc_epoch{args.epoch}.npy'), plabels)
     return acc, plabels
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate pseudolabels from clustering')
-    parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
-    parser.add_argument('--epoch', type=int, default=None, help='which epoch for evaluation')
-    parser.add_argument('--esnc', action='store_true', help='use elastic net subspace for clustering')
-    parser.add_argument('--kmeans', action='store_true', help='use kmeans for clustering')
-
-    parser.add_argument('--save', action='store_true', help='save labels')
-    parser.add_argument('--n', type=int, default=10, help='number of clusters for cluster (default: 10)')
-    parser.add_argument('--gam', type=int, default=100, 
-                        help='gamma paramter for subspace clustering (default: 100)')
-    parser.add_argument('--tau', type=float, default=1.0,
-                        help='tau paramter for subspace clustering (default: 1.0)')
-    parser.add_argument('--tail', type=str, default='',
-                    help='extra information to add to file name')
-    args = parser.parse_args()
-
-
-    # path = os.path.join(f"./plabels", f'n{args.n}_gam{args.gam}_tau{args.tau}{args.tail}.npy')
-    # print("plabels path:", path)
-    params = utils.load_params(args.model_dir)
-    net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
-    train_transforms = tf.load_transforms('test')
-    trainset = tf.load_trainset(params['data'], train_transforms, train=True)
-    trainloader = DataLoader(trainset, batch_size=500, shuffle=False, num_workers=4)
-    features, labels = tf.get_features(net, trainloader)
-    args.epoch = epoch
-
-    if args.kmeans:
-        kmeans(args, features, labels)
-    else:
-        ensc(args, featurs, labels)
 
     
