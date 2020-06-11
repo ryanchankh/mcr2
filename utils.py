@@ -58,7 +58,7 @@ def save_params(model_dir, params):
 
 def update_params(model_dir, pretrain_dir):
     """Updates architecture and feature dimension from pretrain directory 
-    to new directoy. """"
+    to new directoy. """
     params = load_params(model_dir)
     old_params = load_params(pretrain_dir)
     params['arch'] = old_params["arch"]
