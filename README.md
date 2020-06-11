@@ -8,25 +8,92 @@ This repository is the official implementation of [Learning Diverse and Discrimi
 
 ## Training
 ### Basics
-- All functions used in training can be found in [`train_func.py`](./train_func.py), which includes: `load_checkpoint()`, `load_trainset()`, etc. For implementation details please refer to docstring. 
-- Code for training are in the following files: [`train_sup.py`](./train_sup.py), [`train_unsup.py`](./train_unsup.py), [`train_contrast.py`](./train_contrast.py). Each has its own command options. 
+- All functions used in training can be found in [`train_func.py`](./train_func.py), which includes: `load_checkpoint(...)`, `load_trainset(...)`, etc. For implementation details please refer to docstring. 
+- Code for training are in the following files: [`train_sup.py`](./train_sup.py) and [`train_selfsup.py`](./train_selfsup.py). Each has its own command options. 
 - Augmentations is used in unsupervised and contrastive setting. Check [augmentloader.py](./augmentloader.py) for implementation details. 
 - Our deep network architectures references [this repo](https://github.com/akamaster/pytorch_resnet_cifar10).
 
-
-### Examples
+### Supervised Setting
+#### Training Options
 - Supervised Setting
+```
+usage: train_sup.py [-h] [--arch ARCH] [--fd FD] [--data DATA] [--epo EPO]
+                    [--bs BS] [--lr LR] [--mom MOM] [--wd WD] [--gam1 GAM1]
+                    [--gam2 GAM2] [--eps EPS] [--lcr LCR] [--lcs LCS]
+                    [--tail TAIL] [--transform TRANSFORM]
+                    [--save_dir SAVE_DIR] [--data_dir DATA_DIR]
+                    [--pretrain_dir PRETRAIN_DIR]
+                    [--pretrain_epo PRETRAIN_EPO]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --arch ARCH           architecture for deep neural network (default: resnet18)
+  --fd FD               dimension of feature dimension (default: 128)
+  --data DATA           dataset for training (default: CIFAR10)
+  --epo EPO             number of epochs for training (default: 500)
+  --bs BS               input batch size for training (default: 1000)
+  --lr LR               learning rate (default: 0.0001)
+  --mom MOM             momentum (default: 0.9)
+  --wd WD               weight decay (default: 5e-4)
+  --gam1 GAM1           gamma1 for tuning empirical loss (default: 1.)
+  --gam2 GAM2           gamma2 for tuning empirical loss (default: 1.)
+  --eps EPS             eps squared (default: 0.5)
+  --lcr LCR             label corruption ratio (default: 0)
+  --lcs LCS             label corruption seed for index randomization (default: 10)
+  --tail TAIL           extra information to add to folder name
+  --transform TRANSFORM transform applied to trainset (default: default
+  --save_dir SAVE_DIR   base directory for saving PyTorch model. (default: ./saved_models/)
+  --data_dir DATA_DIR   base directory for saving PyTorch model. (default: ./data/)
+  --pretrain_dir PRETRAIN_DIR load pretrained checkpoint for assigning labels
+  --pretrain_epo PRETRAIN_EPO load pretrained epoch for assigning labels
+```
+
+#### Examples
 ```
 python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --transform default --eps 0.5 --gam1 1 --gam2 1 --lr 0.0001 --save_dir ./saved_models/
 ```
-- Unsupervised Setting
+
+### Self-supervised Setting
+#### Training Options
 ```
-python3 train_unsup.py --arch resnet18stlsmall --data stl10 --fd 128 --epo 50 --bs 1000 --aug 50 --transform stl10 --sampler random  --eps 0.5 --gam1 20 --gam2 1 --lr 0.01
+usage: train_selfsup.py [-h] [--arch ARCH] [--fd FD] [--data DATA] [--epo EPO]
+                        [--bs BS] [--aug AUG] [--lr LR] [--mom MOM] [--wd WD]
+                        [--gam1 GAM1] [--gam2 GAM2] [--eps EPS] [--tail TAIL]
+                        [--transform TRANSFORM] [--sampler SAMPLER]
+                        [--pretrain_dir PRETRAIN_DIR]
+                        [--pretrain_epo PRETRAIN_EPO] [--save_dir SAVE_DIR]
+                        [--data_dir DATA_DIR]
+
+Unsupervised Learning
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --arch ARCH           architecture for deep neural network (default: resnet18)
+  --fd FD               dimension of feature dimension (default: 32)
+  --data DATA           dataset for training (default: CIFAR10)
+  --epo EPO             number of epochs for training (default: 50)
+  --bs BS               input batch size for training (default: 1000)
+  --aug AUG             number of augmentations per mini-batch (default: 49)
+  --lr LR               learning rate (default: 0.001)
+  --mom MOM             momentum (default: 0.9)
+  --wd WD               weight decay (default: 5e-4)
+  --gam1 GAM1           gamma1 for tuning empirical loss (default: 1.0)
+  --gam2 GAM2           gamma2 for tuning empirical loss (default: 10)
+  --eps EPS             eps squared (default: 2)
+  --tail TAIL           extra information to add to folder name
+  --transform TRANSFORM transform applied to trainset (default: default
+  --sampler SAMPLER     sampler used in augmentloader (default: random
+  --pretrain_dir PRETRAIN_DIR load pretrained checkpoint for assigning labels
+  --pretrain_epo PRETRAIN_EPO load pretrained epoch for assigning labels
+  --save_dir SAVE_DIR   base directory for saving PyTorch model. (default: ./saved_models/)
+  --data_dir DATA_DIR   base directory for saving PyTorch model. (default: ./data/)
 ```
-- Contrastive Setting
+#### Examples
 ```
-TBD
+python3 train_selfsup.py --arch resnet18stlsmall --data stl10 --fd 128 --epo 50 --bs 1000 --aug 50 --transform stl10 --sampler random  --eps 0.5 --gam1 20 --gam2 1 --lr 0.01
 ```
+
+
 
 
 ## Evaluation
