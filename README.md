@@ -11,7 +11,6 @@ This repository is the official implementation of [Learning Diverse and Discrimi
 - All functions used in training can be found in [`train_func.py`](./train_func.py), which includes: `load_checkpoint(...)`, `load_trainset(...)`, etc. For implementation details please refer to docstring. 
 - Code for training are in the following files: [`train_sup.py`](./train_sup.py) and [`train_selfsup.py`](./train_selfsup.py). Each has its own command options. 
 - Augmentations is used in unsupervised and contrastive setting. Check [`augmentloader.py`](./augmentloader.py) for implementation details. 
-- Our deep network architectures references [this repo](https://github.com/akamaster/pytorch_resnet_cifar10).
 
 ### Supervised Setting
 #### Training Options
@@ -109,7 +108,7 @@ $ python3 train_selfsup.py --arch resnet18stlsmall --data stl10 --fd 128 --epo 5
 
 
 ## Evaluation
-Testing methods available are: `svm`, `knn`, `nearsub`, `kmeans`, `ensc`. Each method also has options for testing hyperparameters, such as `--k` for top `k` components in kNN. Methods can also be chained. Checkpoint can also be specified using `--epoch` option. Please refer to [`evaluate.py`](./evaluate.py) and [`./cluster.py`](./cluster.py) and for more implementation details. 
+Testing methods available are: `svm`, `knn`, `nearsub`, `kmeans`, `ensc`. Each method also has options for testing hyperparameters, such as `--k` for top `k` components in kNN. Methods can also be chained. Checkpoint can also be specified using `--epoch` option. Please refer to [`evaluate.py`](./evaluate.py) and [`cluster.py`](./cluster.py) and for more implementation details. 
 - Command Options
 ```
 usage: evaluate.py [-h] [--model_dir MODEL_DIR] [--svm] [--knn] [--nearsub]
