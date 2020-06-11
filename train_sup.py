@@ -14,7 +14,7 @@ import utils
 
 parser = argparse.ArgumentParser(description='Supervised Learning')
 parser.add_argument('--arch', type=str, default='resnet18',
-                    help='architecture for deep neural network (default: resnet18')
+                    help='architecture for deep neural network (default: resnet18)')
 parser.add_argument('--fd', type=int, default=128,
                     help='dimension of feature dimension (default: 128)')
 parser.add_argument('--data', type=str, default='cifar10',

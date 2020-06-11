@@ -13,7 +13,7 @@ import utils
 
 parser = argparse.ArgumentParser(description='Unsupervised Learning')
 parser.add_argument('--arch', type=str, default='resnet18',
-                    help='architecture for deep neural network (default: resnet18')
+                    help='architecture for deep neural network (default: resnet18)')
 parser.add_argument('--fd', type=int, default=32,
                     help='dimension of feature dimension (default: 32)')
 parser.add_argument('--data', type=str, default='cifar10',
@@ -23,7 +23,7 @@ parser.add_argument('--epo', type=int, default=50,
 parser.add_argument('--bs', type=int, default=1000,
                     help='input batch size for training (default: 1000)')
 parser.add_argument('--aug', type=int, default=50,
-                    help='number of augmentations per mini-batch (default: 49)')
+                    help='number of augmentations per mini-batch (default: 50)')
 parser.add_argument('--lr', type=float, default=0.001,
                     help='learning rate (default: 0.001)')
 parser.add_argument('--mom', type=float, default=0.9,
