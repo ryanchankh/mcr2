@@ -9,9 +9,9 @@ from sklearn.svm import LinearSVC
 from sklearn.decomposition import PCA
 from sklearn.decomposition import TruncatedSVD
 
-import utils
+import cluster
 import train_func as tf
-from cluster import kmeans, ensc
+import utils
 
 
 def svm(args, train_features, train_labels, test_features, test_labels):
@@ -24,7 +24,12 @@ def svm(args, train_features, train_labels, test_features, test_labels):
 
 
 def knn(args, train_features, train_labels, test_features, test_labels):
-    ## Compute top k-nearest neighbors using cosine similarity
+    """Perform k-Nearest Neighbor classification using cosine similaristy as metric.
+
+    Options:
+        k (int): top k features for kNN
+    
+    """
     sim_mat = train_features @ test_features.T
     topk = sim_mat.topk(k=args.k, dim=0)
     topk_pred = train_labels[topk.indices]
@@ -35,19 +40,30 @@ def knn(args, train_features, train_labels, test_features, test_labels):
 
 
 def nearsub(args, train_features, train_labels, test_features, test_labels):
+    """Perform nearest subspace classification.
+    
+    Options:
+        n_comp (int): number of components for PCA or SVD
+    
+    """
     scores_pca = []
     scores_svd = []
-    num_classes = train_labels.numpy().max() + 1
-    features_sort, _ = utils.sort_dataset(train_features.numpy(), train_labels.numpy(), num_classes=num_classes, stack=False)
+    num_classes = train_labels.numpy().max() + 1 # should be correct most of the time
+    features_sort, _ = utils.sort_dataset(train_features.numpy(), train_labels.numpy(), 
+                                          num_classes=num_classes, stack=False)
     for j in range(num_classes):
         pca = PCA(n_components=args.n_comp).fit(features_sort[j]) 
-        subspace = pca.components_.T
+        pca_subspace = pca.components_.T
         mean = np.mean(features_sort[j], axis=0)
-        score_pca_j = np.linalg.norm((np.eye(params["fd"]) - subspace @ subspace.T) @ (test_features.numpy() - mean).T, ord=2, axis=0)
+        pca_j = (np.eye(params["fd"]) - pca_subspace @ pca_subspace.T) @ \
+                        (test_features.numpy() - mean).T
+        score_pca_j = np.linalg.norm(pca_j, ord=2, axis=0)
 
-        pca = TruncatedSVD(n_components=args.n_comp).fit(features_sort[j])
-        subspace = pca.components_.T
-        score_svd_j = np.linalg.norm((np.eye(params["fd"]) - subspace @ subspace.T) @ (test_features.numpy()).T, ord=2, axis=0)
+        svd = TruncatedSVD(n_components=args.n_comp).fit(features_sort[j])
+        svd_subspace = svd.components_.T
+        svd_j = (np.eye(params["fd"]) - svd_subspace @ svd_subspace.T) @ \ 
+                        (test_features.numpy()).T
+        score_svd_j = np.linalg.norm(svd_j, ord=2, axis=0)
         
         scores_pca.append(score_pca_j)
         scores_svd.append(score_svd_j)
@@ -58,6 +74,26 @@ def nearsub(args, train_features, train_labels, test_features, test_labels):
     print('PCA: {}'.format(acc_pca))
     print('SVD: {}'.format(acc_svd))
     return acc_pca
+
+def kmeans(args, train_features, train_labels, test_features, test_labels):
+    """Perform KMeans clustering. 
+    
+    Options:
+        n (int): number of clusters used in KMeans.
+
+    """
+    return cluster.kmeans(args, train_features, train_labels)
+
+def ensc(args, train_features, train_labels, test_features, test_labels):
+    """Perform Elastic Net Subspace Clustering.
+    
+    Options:
+        gam (float): gamma parameter in EnSC
+        tau (float): tau parameter in EnSC
+
+    """
+    return ensc(args, train_features, train_labels)
+
 
 
 if __name__ == '__main__':
@@ -81,11 +117,12 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', default='./data/', help='path to dataset')
     args = parser.parse_args()
 
-    ## load model, train data, and test data
+    ## load model
     params = utils.load_params(args.model_dir)
     net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
     net = net.cuda().eval()
     
+    # get train features and labels
     train_transforms = tf.load_transforms('test')
     trainset = tf.load_trainset(params['data'], train_transforms, train=True, path=args.data_dir)
     if 'lcr' in params.keys(): # supervised corruption case
@@ -94,6 +131,7 @@ if __name__ == '__main__':
     trainloader = DataLoader(trainset, batch_size=50, num_workers=4)
     train_features, train_labels = tf.get_features(net, trainloader)
 
+    # get test features and labels
     test_transforms = tf.load_transforms('test')
     testset = tf.load_trainset(params['data'], test_transforms, train=False)
     testloader = DataLoader(testset, batch_size=50)
@@ -109,4 +147,3 @@ if __name__ == '__main__':
         kmeans(args, train_features, train_labels)
     if args.ensc:
         ensc(args, train_features, train_labels)
-    

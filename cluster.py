@@ -597,6 +597,12 @@ def clustering_accuracy(labels_true, labels_pred):
 
 
 def kmeans(args, train_features, train_labels, test_features=None, test_labels=None):
+    """Perform KMeans clustering. 
+    
+    Options:
+        n (int): number of clusters used in KMeans.
+
+    """
     clustermd = KMeans(n_clusters=args.n, random_state=10)
     clustermd.fit(train_features)
     plabels = clustermd.labels_
@@ -609,12 +615,19 @@ def kmeans(args, train_features, train_labels, test_features=None, test_labels=N
 
 
 def ensc(args, train_features, train_labels, test_features=None, test_labels=None):
+    """Perform Elastic Net Subspace Clustering.
+    
+    Options:
+        gam (float): gamma parameter in EnSC
+        tau (float): tau parameter in EnSC
+
+    """
     clustermd = ElasticNetSubspaceClustering(n_clusters=args.n, algorithm='spams', 
                 gamma=args.gam, tau=args.tau)
     clustermd.fit(train_features)
     plabels = clustermd.labels_
     acc = clustering_accuracy(train_labels, plabels)
-    print('ENSC: {}'.format(acc))
+    print('EnSC: {}'.format(acc))
 
     if args.save:
         np.save(os.path.join(args.model_dir, 'plabels', f'ensc_epoch{args.epoch}.npy'), plabels)
