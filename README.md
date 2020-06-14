@@ -13,8 +13,7 @@ This repository is the official implementation of [Learning Diverse and Discrimi
 - Augmentations is used in unsupervised and contrastive setting. Check [`augmentloader.py`](./augmentloader.py) for implementation details. 
 
 ### Supervised Setting
-#### Training Options
-- Supervised Setting
+
 ```
 usage: train_sup.py [-h] [--arch ARCH] [--fd FD] [--data DATA] [--epo EPO]
                     [--bs BS] [--lr LR] [--mom MOM] [--wd WD] [--gam1 GAM1]
@@ -61,7 +60,7 @@ $ python3 train_sup.py --arch resnet18stlsmall2 --data stl10_sup --fd 128 --epo 
 ```
 
 ### Self-supervised Setting
-#### Training Options
+
 ```
 usage: train_selfsup.py [-h] [--arch ARCH] [--fd FD] [--data DATA] [--epo EPO]
                         [--bs BS] [--aug AUG] [--lr LR] [--mom MOM] [--wd WD]
@@ -109,7 +108,9 @@ $ python3 train_selfsup.py --arch resnet18stlsmall --data stl10 --fd 128 --epo 5
 
 ## Evaluation
 Testing methods available are: `svm`, `knn`, `nearsub`, `kmeans`, `ensc`. Each method also has options for testing hyperparameters, such as `--k` for top `k` components in kNN. Methods can also be chained. Checkpoint can also be specified using `--epoch` option. Please refer to [`evaluate.py`](./evaluate.py) and [`cluster.py`](./cluster.py) and for more implementation details. 
+
 - Command Options
+
 ```
 usage: evaluate.py [-h] [--model_dir MODEL_DIR] [--svm] [--knn] [--nearsub]
                    [--kmeans] [--ensc] [--epoch EPOCH] [--k K] [--n N]
@@ -134,18 +135,34 @@ optional arguments:
   --data_dir DATA_DIR   path to dataset
 ```
 - An example for evaluation:
+
 ```
 $ python3 evaluate.py --knn --nearsub --k 10 --model_dir saved_models/sup_resnet18+128_cifar10_epo500_bs1000_lr0.001_mom0.9_wd0.0005_gam11.0_gam210.0_eps0.5_lcr0
 ```
 , which runs kNN with top 10 components and nearest subspace on the latest checkpoint in `model_dir`.
 
 
-## Pretrain Models
+## Reproduce Results in Paper
 
+### Commands for Supervised Learning Setting
+
+```
+$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01 --lcr 0.0
+$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01 --lcr 0.1
+$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01 --lcr 0.2
+$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01 --lcr 0.3
+$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01 --lcr 0.4
+$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01 --lcr 0.5
+```
+
+### Commands for Self-supervised Learning Setting
+```
+$ python3 train_selfsup.py --arch resnet18selfsup --data cifar10 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform cifar
+$ python3 train_selfsup.py --arch resnet18selfsup --data cifar100 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform cifar
+$ python3 train_selfsup.py --arch resnet18stl --data stl10 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform stl10
+```
 
 
 ## Lisence and Contributing
 - This README is formatted based on [paperswithcode](https://github.com/paperswithcode/releasing-research-code).
 - Feel free to post issues via Github. 
-
-
