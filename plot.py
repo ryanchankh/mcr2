@@ -524,9 +524,6 @@ def plot_nearest_component_class(args, features, labels, epoch, trainset):
         plt.close()
 
 
-
-
-
 def plot_pca_epoch(args):
     EPOCHS = [0, 10, 100, 500]
 
