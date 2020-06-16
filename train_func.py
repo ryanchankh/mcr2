@@ -135,28 +135,12 @@ def load_transforms(name):
             transforms.RandomCrop(32, padding=8),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor()])
-    elif _name == "simclr":
+    elif _name == "cifar":
         transform = transforms.Compose([
             transforms.RandomResizedCrop(32),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
-            transforms.ToTensor()])
-    elif _name == "augment":
-         transform = transforms.Compose([
-            transforms.RandomChoice([
-                transforms.ColorJitter(brightness=(0.5, 1)),
-                transforms.ColorJitter(contrast=(0, 1)),
-                transforms.ColorJitter(saturation=(0, 1)),
-                transforms.Grayscale(3),
-                transforms.RandomResizedCrop(32, scale=(0.3, 1.0)),
-                transforms.RandomVerticalFlip(p=0.5),
-                transforms.RandomHorizontalFlip(p=0.5),
-                transforms.RandomRotation((-30, 30)),
-                transforms.RandomAffine((-30, 30)),
-                transforms.RandomAffine(0, translate=(0.1, 0.3)),
-                transforms.RandomAffine(0, scale=(0.8, 1.1)),
-                transforms.RandomAffine(0, shear=(-20, 20))]), 
             transforms.ToTensor()])
     elif _name == "mnist":
          transform = transforms.Compose([
