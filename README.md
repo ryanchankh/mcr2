@@ -1,5 +1,5 @@
 # Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction
-This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](link).
+This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](https://arxiv.org/abs/2006.08558) (2020).
 
 ## Requirements
 - This codebase is written for `python3`.
@@ -142,9 +142,12 @@ $ python3 evaluate.py --knn --nearsub --k 10 --model_dir saved_models/sup_resnet
 , which runs kNN with top 10 components and nearest subspace on the latest checkpoint in `model_dir`.
 
 
-## Reproduce Results in Paper
+## Others
+- **(Extracting Features as .zip)** To extract the features, use `extract.py`.
+- **(Plotting figures)** Plot functions are located in `plot.py`. Plots will be saved in `(model_dir)/figures/`
+- **(Reproduce Results in Paper)**
 
-### Commands for Supervised Learning Setting
+#### Commands for Supervised Learning Setting
 
 ```
 $ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01 --lcr 0.0
@@ -155,7 +158,7 @@ $ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 10
 $ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01 --lcr 0.5
 ```
 
-### Commands for Self-supervised Learning Setting
+#### Commands for Self-supervised Learning Setting
 ```
 $ python3 train_selfsup.py --arch resnet18selfsup --data cifar10 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform cifar
 $ python3 train_selfsup.py --arch resnet18selfsup --data cifar100 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform cifar
