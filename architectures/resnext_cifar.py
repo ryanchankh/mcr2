@@ -1,5 +1,4 @@
 '''ResNeXt in PyTorch.
-
 See the paper "Aggregated Residual Transformations for Deep Neural Networks" for more details.
 '''
 import torch
@@ -72,7 +71,6 @@ class ResNeXt(nn.Module):
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
-        # out = self.layer4(out)
         out = F.avg_pool2d(out, 8)
         out = out.view(out.size(0), -1)
         out = self.reshape(out)
@@ -82,14 +80,11 @@ class ResNeXt(nn.Module):
 def ResNeXt29_2x64d(feature_dim=128):
     return ResNeXt(num_blocks=[3, 3, 3], cardinality=2, bottleneck_width=64, feature_dim=feature_dim)
 
-
 def ResNeXt29_4x64d(feature_dim=128):
     return ResNeXt(num_blocks=[3, 3, 3], cardinality=4, bottleneck_width=64, feature_dim=feature_dim)
 
-
 def ResNeXt29_8x64d(feature_dim=128):
     return ResNeXt(num_blocks=[3, 3, 3], cardinality=8, bottleneck_width=64, feature_dim=feature_dim)
-
 
 def ResNeXt29_32x4d(feature_dim=128):
     return ResNeXt(num_blocks=[3, 3, 3], cardinality=32, bottleneck_width=4, feature_dim=feature_dim)

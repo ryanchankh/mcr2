@@ -28,48 +28,12 @@ def load_architectures(name, dim):
     if _name == "resnet18":
         from architectures.resnet_cifar import ResNet18
         net = ResNet18(dim)
-    elif _name == "resnet34":
-        from architectures.resnet_cifar import ResNet34
-        net = ResNet34(dim)
-    elif _name == "resnet50":
-        from architectures.resnet_cifar import ResNet50
-        net = ResNet50(dim)
-    elif _name == "resnet101":
-        from architectures.resnet_cifar import ResNet101
-        net = ResNet101(dim)
-    elif _name == "resnet152":
-        from architectures.resnet_cifar import ResNet152
-        net = ResNet152(dim)
-    elif _name == "resnet18mod":
-        from architectures.resnet_cifar import ResNet18Mod
-        net = ResNet18Mod(dim)
-    elif _name == "resnet18old":
-        from architectures.resnet_cifar import ResNet18Old
-        net = ResNet18Old(dim) 
-    elif _name == "cnn":
-        from architectures.cnn import CNN
-        net = CNN(dim)
-    elif _name == "cnn2":
-        from architectures.cnn import CNN2
-        net = CNN2(dim)
-    elif _name == "resnet10mnist":
-        from architectures.resnet_mnist import ResNet10MNIST
-        net = ResNet10MNIST(dim)
-    elif _name == "resnet18emp":
-        from architectures.resnet_cifar import ResNet18Emp
-        net = ResNet18Emp(dim)
+    elif _name == "resnet18selfsup":
+        from architectures.resnet_cifar import ResNet18SelfSup
+        net = ResNet18SelfSup(dim)
     elif _name == "resnet18stl":
         from architectures.resnet_stl import ResNet18STL
         net = ResNet18STL(dim)
-    elif _name == "resnet18stl2":
-        from architectures.resnet_stl import ResNet18STL2
-        net = ResNet18STL2(dim)
-    elif _name == "resnet18stlsmall":
-        from architectures.resnet_stl import ResNet18STLsmall
-        net = ResNet18STLsmall(dim)
-    elif _name == "resnet18stlsmall2":
-        from architectures.resnet_stl import ResNet18STLsmall2
-        net = ResNet18STLsmall2(dim)
     elif _name == "vgg11":
         from architectures.vgg_cifar import VGG11
         net = VGG11(dim)
@@ -85,6 +49,9 @@ def load_architectures(name, dim):
     elif _name == "resnext29_32x4d":
         from architectures.resnext_cifar import ResNeXt29_32x4d
         net = ResNeXt29_32x4d(dim)
+    elif _name == "resnet10mnist":
+        from architectures.resnet_mnist import ResNet10MNIST
+        net = ResNet10MNIST(dim)
     else:
         raise NameError("{} not found in architectures.".format(name))
     net = torch.nn.DataParallel(net).cuda()
