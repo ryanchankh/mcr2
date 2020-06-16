@@ -128,13 +128,13 @@ if __name__ == '__main__':
     if 'lcr' in params.keys(): # supervised corruption case
         trainset = tf.corrupt_labels(trainset, params['lcr'], params['lcs'])
     new_labels = trainset.targets
-    trainloader = DataLoader(trainset, batch_size=50, num_workers=4)
+    trainloader = DataLoader(trainset, batch_size=200)
     train_features, train_labels = tf.get_features(net, trainloader)
 
     # get test features and labels
     test_transforms = tf.load_transforms('test')
     testset = tf.load_trainset(params['data'], test_transforms, train=False)
-    testloader = DataLoader(testset, batch_size=50)
+    testloader = DataLoader(testset, batch_size=200)
     test_features, test_labels = tf.get_features(net, testloader)
 
     if args.svm:
