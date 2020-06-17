@@ -20,7 +20,7 @@ class MaximalCodingRateReduction(torch.nn.Module):
         I = torch.eye(p).cuda()
         scalar = p / (m * self.eps)
         logdet = torch.logdet(I + self.gam1 * scalar * W.matmul(W.T))
-        return logdet
+        return logdet / 2.
 
     def compute_compress_loss_empirical(self, W, Pi):
         """Empirical Compressive Loss."""
@@ -33,7 +33,7 @@ class MaximalCodingRateReduction(torch.nn.Module):
             scalar = p / (trPi * self.eps)
             log_det = torch.logdet(I + scalar * W.matmul(Pi[j]).matmul(W.T))
             compress_loss += log_det * trPi / m
-        return compress_loss
+        return compress_loss / 2.
 
     def compute_discrimn_loss_theoretical(self, W):
         """Theoretical Discriminative Loss."""
