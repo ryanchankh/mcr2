@@ -81,6 +81,7 @@ def load_trainset(name, transform=None, train=True, path="./data/"):
         trainset = torchvision.datasets.CIFAR100(root=os.path.join(path, "cifar100"), train=train,
                                                  download=True, transform=transform)
         trainset.targets = sparse2coarse(trainset.targets) 
+        trainset.classes = np.arange(20)
     elif _name == "mnist":
         trainset = torchvision.datasets.MNIST(root=os.path.join(path, "mnist"), train=train, 
                                               download=True, transform=transform)
