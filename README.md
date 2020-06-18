@@ -45,19 +45,7 @@ optional arguments:
   --pretrain_dir PRETRAIN_DIR load pretrained checkpoint for assigning labels
   --pretrain_epo PRETRAIN_EPO load pretrained epoch for assigning labels
 ```
-#### Examples
-```
-$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.0001 --save_dir ./saved_models/
-$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 1 --gam1 1 --gam2 1 --lr 0.01
-$ python3 train_sup.py --arch vgg11 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01
-$ python3 train_sup.py --arch resnext29_2x64d --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01
-$ python3 train_sup.py --arch resnet34 --data cifar10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01
-$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 500 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01
-$ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 4000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.01
-$ python3 train_sup.py --arch resnet18stlsmall2 --data stl10 --fd 128 --epo 500 --bs 1000 --eps 0.5 --gam1 1 --gam2 1 --lr 0.05
-$ python3 train_sup.py --arch resnet18stlsmall2 --data stl10 --fd 128 --epo 500 --bs 1000 --eps 1 --gam1 1 --gam2 1 --lr 0.01
-$ python3 train_sup.py --arch resnet18stlsmall2 --data stl10_sup --fd 128 --epo 500 --bs 1000 --eps 1 --gam1 1 --gam2 1 --lr 0.001
-```
+Examples at a later section. 
 
 ### Self-supervised Setting
 
@@ -92,18 +80,7 @@ optional arguments:
   --save_dir SAVE_DIR   base directory for saving PyTorch model. (default: ./saved_models/)
   --data_dir DATA_DIR   base directory for saving PyTorch model. (default: ./data/)
 ```
-#### Examples
-```
-$ python3 train_unsup.py --arch resnet18 --data cifar10 --fd 32 --epo 50 --bs 1000 --eps 2 --gam1 1 --gam2 0.5 --lr 0.02 --aug 50 --transform simclr
-$ python3 train_unsup.py --arch resnet18 --data cifar10 --fd 32 --epo 50 --bs 1000 --eps 2 --gam1 1 --gam2 1 --lr 0.2 --aug 50 --transform simclr
-$ python3 train_unsup.py --arch resnet18emp --data cifar10 --fd 128 --epo 150 --bs 1000 --eps 0.5 --gam1 15 --gam2 0.05 --lr 0.2 --aug 50 --transform simclr
-$ python3 train_unsup.py --arch resnet18emp --data cifar10 --fd 128 --epo 150 --bs 1000 --eps 0.1 --gam1 15 --gam2 0.05 --lr 0.1 --aug 50 --transform simclr
-$ python3 train_unsup.py --arch resnet18emp --data cifar10 --fd 128 --epo 150 --bs 1000 --eps 0.1 --gam1 15 --gam2 0.05 --lr 0.05 --aug 50 --transform simclr
-$ python3 train_unsup.py --arch resnet18stlsmall --data stl10 --fd 128 --epo 150 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.2 --aug 50 --transform stl10
-$ python3 train_unsup.py --arch resnet18stlsmall --data stl10 --fd 128 --epo 150 --bs 1000 --eps 0.5 --gam1 15 --gam2 0.05 --lr 0.2 --aug 50 --transform stl10 
-$ python3 train_unsup.py --arch resnet18stlsmall --data stl10 --fd 128 --epo 150 --bs 1000 --eps 0.5 --gam1 25 --gam2 0.05 --lr 0.2 --aug 50 --transform stl10 
-$ python3 train_selfsup.py --arch resnet18stlsmall --data stl10 --fd 128 --epo 50 --bs 1000 --aug 50 --transform stl10 --sampler random  --eps 0.5 --gam1 20 --gam2 1 --lr 0.01
-```
+Examples at a later section.
 
 
 ## Evaluation
