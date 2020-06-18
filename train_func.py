@@ -77,6 +77,10 @@ def load_trainset(name, transform=None, train=True, path="./data/"):
     elif _name == "cifar100":
         trainset = torchvision.datasets.CIFAR100(root=os.path.join(path, "cifar100"), train=train,
                                                  download=True, transform=transform)
+    elif _name == "cifar100coarse":
+        trainset = torchvision.datasets.CIFAR100(root=os.path.join(path, "cifar100"), train=train,
+                                                 download=True, transform=transform)
+        trainset.targets = sparse2coarse(trainset.targets) 
     elif _name == "mnist":
         trainset = torchvision.datasets.MNIST(root=os.path.join(path, "mnist"), train=train, 
                                               download=True, transform=transform)
@@ -310,3 +314,14 @@ class GaussianBlur():
             sample = cv2.GaussianBlur(sample, (self.kernel_size, self.kernel_size), sigma)
 
         return sample
+
+
+def sparse2coarse(targets):
+    """CIFAR100 Coarse Labels. """
+    coarse_targets = [ 4,  1, 14,  8,  0,  6,  7,  7, 18,  3,  3, 14,  9, 18,  7, 11,  3,
+                        9,  7, 11,  6, 11,  5, 10,  7,  5,  6, 13, 15,  3, 15,  0, 11,  1,
+                        10, 12, 14, 16,  9, 11,  5, 19,  8,  8, 15, 13, 14, 17, 18, 10, 16,
+                        4, 17,  4,  2,  0, 17,  4, 18, 17, 10,  3,  2, 12, 12, 16, 12,  1,
+                        9, 19,  2, 10,  0,  1, 16, 12,  9, 13, 15, 13, 16, 19,  2,  4,  6,
+                        19,  5,  5,  8, 19, 18,  1,  2, 15,  6,  0, 17,  8, 14, 13]
+    return np.array(coarse_targets)[targets]
