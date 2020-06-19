@@ -38,7 +38,7 @@ def gen_testloss(args):
         for step, (batch_imgs, batch_lbls) in enumerate(testloader):
             features = net(batch_imgs.cuda())
             loss, loss_empi, loss_theo = criterion(features, batch_lbls, 
-                                            num_classes=len(testset.classes))
+                                            num_classes=len(testset.num_classes))
             utils.save_state(args.model_dir, epoch, step, loss.item(), 
                 *loss_empi, *loss_theo, filename='losses_test.csv')
     print("Finished generating test loss.")

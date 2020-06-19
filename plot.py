@@ -147,10 +147,10 @@ def plot_pca(args, features, labels, epoch):
     ## perform PCA on features
     n_comp = np.min([args.comp, features.shape[1]])
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
-                            num_classes=len(trainset.classes), stack=False)
+                            num_classes=trainset.num_classes, stack=False)
     pca = PCA(n_components=n_comp).fit(features.numpy())
     sig_vals = [pca.singular_values_]
-    for c in range(len(trainset.classes)): 
+    for c in range(trainset.num_classes): 
         pca = PCA(n_components=n_comp).fit(features_sort[c])
         sig_vals.append((pca.singular_values_))
 
@@ -239,7 +239,7 @@ def plot_hist_all(args, features, labels, epoch):
         os.makedirs(os.path.join(hist_folder, "sim_mat"))
     
 
-    num_classes = len(trainset.classes)
+    num_classes = trainset.num_classes
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=num_classes, stack=False)
 
@@ -291,7 +291,7 @@ def plot_hist_paper(args, features, labels, epoch):
     if not os.path.exists(hist_folder):
         os.makedirs(hist_folder)
 
-    num_classes = len(trainset.classes)
+    num_classes = trainset.num_classes
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=num_classes, stack=False)
     i = 0
@@ -449,11 +449,11 @@ def plot_traintest(args, path_test):
 def plot_nearest_component(args, features, labels, epoch, trainset):
     ## perform PCA on features
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
-                            num_classes=len(trainset.classes), stack=False)
+                            num_classes=trainset.num_classes, stack=False)
     data_sort, _ = utils.sort_dataset(trainset.data, labels.numpy(), 
-                            num_classes=len(trainset.classes), stack=False)
+                            num_classes=trainset.num_classes, stack=False)
     nearest_data = []
-    for c in range(len(trainset.classes)):
+    for c in range(trainset.num_classes):
         pca = TruncatedSVD(n_components=10, random_state=10).fit(features_sort[c])
         proj = features_sort[c] @ pca.components_.T
         img_idx = np.argmax(np.abs(proj), axis=0)
@@ -485,11 +485,11 @@ def plot_nearest_component_class(args, features, labels, epoch, trainset):
         os.makedirs(save_dir)
 
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
-                            num_classes=len(trainset.classes), stack=False)
+                            num_classes=trainset.num_classes, stack=False)
     data_sort, _ = utils.sort_dataset(trainset.data, labels.numpy(), 
-                            num_classes=len(trainset.classes), stack=False)
+                            num_classes=trainset.num_classes, stack=False)
 
-    for class_ in range(len(trainset.classes)):
+    for class_ in range(trainset.num_classes):
         nearest_data = []
         nearest_val = []
         pca = TruncatedSVD(n_components=10, random_state=10).fit(features_sort[class_])
@@ -542,7 +542,7 @@ def plot_pca_epoch(args):
         features, labels = tf.get_features(net, trainloader)
         if args.class_ is not None:
             features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
-                            num_classes=len(trainset.classes), stack=False)
+                            num_classes=trainset.num_classes, stack=False)
             features_ = features_sort[args.class_]
         else:
             features_ = features.numpy()
@@ -638,7 +638,7 @@ def plot_accuracy(args, path):
 
 
 def plot_heatmap(args, features, labels, epoch):
-    num_classes = len(trainset.classes)
+    num_classes = trainset.num_classes
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=num_classes, stack=False)
     features_sort_ = np.vstack(features_sort)

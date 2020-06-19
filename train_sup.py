@@ -93,7 +93,7 @@ for epoch in range(args.epo):
     lr_schedule(epoch, optimizer)
     for step, (batch_imgs, batch_lbls) in enumerate(trainloader):
         features = net(batch_imgs.cuda())
-        loss, loss_empi, loss_theo = criterion(features, batch_lbls, num_classes=len(trainset.classes))
+        loss, loss_empi, loss_theo = criterion(features, batch_lbls, num_classes=trainset.num_classes)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
