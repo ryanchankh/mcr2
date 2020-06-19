@@ -74,37 +74,28 @@ def load_trainset(name, transform=None, train=True, path="./data/"):
     if _name == "cifar10":
         trainset = torchvision.datasets.CIFAR10(root=os.path.join(path, "cifar10"), train=train,
                                                 download=True, transform=transform)
+        trainset.num_classes = 10
     elif _name == "cifar100":
         trainset = torchvision.datasets.CIFAR100(root=os.path.join(path, "cifar100"), train=train,
                                                  download=True, transform=transform)
+       trainset.num_classes = 100
     elif _name == "cifar100coarse":
         trainset = torchvision.datasets.CIFAR100(root=os.path.join(path, "cifar100"), train=train,
                                                  download=True, transform=transform)
         trainset.targets = sparse2coarse(trainset.targets) 
         trainset.classes = np.arange(20)
+        trainset.num_classes = 20
     elif _name == "mnist":
         trainset = torchvision.datasets.MNIST(root=os.path.join(path, "mnist"), train=train, 
                                               download=True, transform=transform)
-    elif _name == "fashionmnist" or _name == "fmnist":
-        trainset = torchvision.datasets.FashionMNIST(root=os.path.join(path, "fashion_mnist"), train=train, 
-                                              download=True, transform=transform) 
-    elif _name == "usps":
-        trainset = torchvision.datasets.USPS(root=os.path.join(path, "usps"), train=train, 
-                                             download=True, transform=transform) 
-    elif _name == "svhn":
-        if train:
-            split_ = 'train'
-        else:
-            split_ = 'test'
-        trainset = torchvision.datasets.SVHN(root=os.path.join(path, "svhn"), split=split_, 
-                                             download=True, transform=transform)
-        trainset.targets = trainset.labels
-        trainset.classes = np.arange(10)
+        trainset.num_classes = 10
     elif _name == "stl10":
         trainset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='train', 
                                               transform=transform, download=True)
         testset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='test', 
                                              transform=transform, download=True)
+        trainset.num_classes = 10
+        testset.num_classes = 10
         if not train:
             return testset
         else:
@@ -117,6 +108,8 @@ def load_trainset(name, transform=None, train=True, path="./data/"):
                                               transform=transform, download=True)
         testset = torchvision.datasets.STL10(root=os.path.join(path, "stl10"), split='test', 
                                              transform=transform, download=True)
+        trainset.num_classes = 10
+        testset.num_classes = 10
         if not train:
             return testset
         else:
@@ -320,9 +313,9 @@ class GaussianBlur():
 def sparse2coarse(targets):
     """CIFAR100 Coarse Labels. """
     coarse_targets = [ 4,  1, 14,  8,  0,  6,  7,  7, 18,  3,  3, 14,  9, 18,  7, 11,  3,
-                        9,  7, 11,  6, 11,  5, 10,  7,  5,  6, 13, 15,  3, 15,  0, 11,  1,
-                        10, 12, 14, 16,  9, 11,  5, 19,  8,  8, 15, 13, 14, 17, 18, 10, 16,
-                        4, 17,  4,  2,  0, 17,  4, 18, 17, 10,  3,  2, 12, 12, 16, 12,  1,
-                        9, 19,  2, 10,  0,  1, 16, 12,  9, 13, 15, 13, 16, 19,  2,  4,  6,
-                        19,  5,  5,  8, 19, 18,  1,  2, 15,  6,  0, 17,  8, 14, 13]
+                       9,  7, 11,  6, 11,  5, 10,  7,  6, 13, 15,  3, 15,  0, 11,  1, 10,
+                      12, 14, 16,  9, 11,  5,  5, 19,  8,  8, 15, 13, 14, 17, 18, 10, 16,
+                       4, 17,  4,  2,  0, 17,  4, 18, 17, 10,  3,  2, 12, 12, 16, 12,  1,
+                       9, 19,  2, 10,  0,  1, 16, 12,  9, 13, 15, 13, 16, 19,  2,  4,  6,
+                      19,  5,  5,  8, 19, 18,  1,  2, 15,  6,  0, 17,  8, 14, 13]
     return np.array(coarse_targets)[targets]
