@@ -83,7 +83,6 @@ def load_trainset(name, transform=None, train=True, path="./data/"):
         trainset = torchvision.datasets.CIFAR100(root=os.path.join(path, "cifar100"), train=train,
                                                  download=True, transform=transform)
         trainset.targets = sparse2coarse(trainset.targets) 
-        trainset.classes = np.arange(20)
         trainset.num_classes = 20
     elif _name == "mnist":
         trainset = torchvision.datasets.MNIST(root=os.path.join(path, "mnist"), train=train, 
@@ -287,7 +286,6 @@ def one_hot(x, K):
     return np.array(x[:, None] == np.arange(K)[None, :], dtype=int)
 
 
-
 ## Additional Augmentations
 class GaussianBlur():
     # Implements Gaussian blur as described in the SimCLR paper
@@ -308,7 +306,6 @@ class GaussianBlur():
             sample = cv2.GaussianBlur(sample, (self.kernel_size, self.kernel_size), sigma)
 
         return sample
-
 
 def sparse2coarse(targets):
     """CIFAR100 Coarse Labels. """
