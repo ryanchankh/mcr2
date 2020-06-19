@@ -78,7 +78,7 @@ def load_trainset(name, transform=None, train=True, path="./data/"):
     elif _name == "cifar100":
         trainset = torchvision.datasets.CIFAR100(root=os.path.join(path, "cifar100"), train=train,
                                                  download=True, transform=transform)
-       trainset.num_classes = 100
+        trainset.num_classes = 100
     elif _name == "cifar100coarse":
         trainset = torchvision.datasets.CIFAR100(root=os.path.join(path, "cifar100"), train=train,
                                                  download=True, transform=transform)
