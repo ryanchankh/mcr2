@@ -137,6 +137,74 @@ def plot_loss_log(args):
     plt.close()
 
 
+def plot_loss_layer(args):
+    """Plot loss per layer. """
+    ## create saving directory
+    loss_dir = os.path.join(args.model_dir, 'figures', 'loss')
+    if not os.path.exists(loss_dir):
+        os.makedirs(loss_dir)
+
+    layer_dir = os.path.join(args.model_dir, "layers")
+    for l, filename in enumerate(os.listdir(layer_dir)):
+        data = pd.read_csv(os.path.join(layer_dir, filename))
+
+        ## extract loss from csv
+        obj_loss_e = -data['loss'].ravel()
+        dis_loss_e = data['discrimn_loss_e'].ravel()
+        com_loss_e = data['compress_loss_e'].ravel()
+        dis_loss_t = data['discrimn_loss_t'].ravel()
+        com_loss_t = data['compress_loss_t'].ravel()
+        obj_loss_t = dis_loss_t - com_loss_t
+
+        ## Theoretical Loss
+        fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
+        num_iter = np.arange(len(obj_loss_t))
+        ax.plot(num_iter, obj_loss_t, label=r'$\mathcal{L}^d-\mathcal{L}^c$', 
+                    color='green', linewidth=1.0, alpha=0.8)
+        ax.plot(num_iter, dis_loss_t, label=r'$\mathcal{L}^d$', 
+                    color='royalblue', linewidth=1.0, alpha=0.8)
+        ax.plot(num_iter, com_loss_t, label=r'$\mathcal{L}^c$', 
+                    color='coral', linewidth=1.0, alpha=0.8)
+        ax.set_ylabel('Loss', fontsize=10)
+        ax.set_xlabel('Number of iterations', fontsize=10)
+        ax.legend(loc='lower right', prop={"size": 15}, ncol=3, framealpha=0.5)
+        ax.set_title("Theoretical Loss")
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        plt.tight_layout()
+        file_name = os.path.join(loss_dir, f'layer{l}_loss_theoretical.png')
+        plt.savefig(file_name, dpi=400)
+        print("Plot saved to: {}".format(file_name))
+        # file_name = os.path.join(loss_dir, f'layer{l}_loss_theoretical.pdf')
+        # plt.savefig(file_name, dpi=400)
+        plt.close()
+        # print("Plot saved to: {}".format(file_name))
+
+        ## Empirial Loss
+        fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
+        num_iter = np.arange(len(obj_loss_e))
+        ax.plot(num_iter, obj_loss_e, label=r'$\widehat{\mathcal{L}^d}-\widehat{\mathcal{L}^c}$', 
+                    color='green', linewidth=1.0, alpha=0.8)
+        ax.plot(num_iter, dis_loss_e, label=r'$\widehat{\mathcal{L}^d}$', 
+                    color='royalblue', linewidth=1.0, alpha=0.8)
+        ax.plot(num_iter, com_loss_e, label=r'$\widehat{\mathcal{L}^c}$', 
+                    color='coral', linewidth=1.0, alpha=0.8)
+        ax.set_ylabel('Loss', fontsize=10)
+        ax.set_xlabel('Number of iterations', fontsize=10)
+        ax.legend(loc='lower right', prop={"size": 15}, ncol=3, framealpha=0.5)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.set_title("Empirical Loss")
+        plt.tight_layout()
+        # file_name = os.path.join(loss_dir, f'layer{l}_loss_empirical.png')
+        # plt.savefig(file_name, dpi=400)
+        # print("Plot saved to: {}".format(file_name))
+        # file_name = os.path.join(loss_dir, f'layer{l}_loss_empirical.pdf')
+        # plt.savefig(file_name, dpi=400)
+        plt.close()
+        # print("Plot saved to: {}".format(file_name))
+
+
 def plot_pca(args, features, labels, epoch):
     """Plot PCA of learned features. """
     ## create save folder
@@ -401,10 +469,14 @@ def plot_nearest_component_supervised(args, features, labels, epoch, trainset):
     for r in range(10):
         for c in range(10):
             ax[r, c].imshow(nearest_data[r][c])
-            ax[r, c].set_axis_off()
-    plt.xlabel("per component")
-    plt.ylabel("per class")
-    
+            ax[r, c].set_xticks([])
+            ax[r, c].set_yticks([])
+            ax[r, c].spines['top'].set_visible(False)
+            ax[r, c].spines['right'].set_visible(False)
+            ax[r, c].spines['bottom'].set_linewidth(False)
+            ax[r, c].spines['left'].set_linewidth(False)
+            if c == 0:
+                ax[r, c].set_ylabel(f"comp {r}")
     ## save
     save_dir = os.path.join(args.model_dir, 'figures', 'nearcomp_sup')
     if not os.path.exists(save_dir):
@@ -416,6 +488,37 @@ def plot_nearest_component_supervised(args, features, labels, epoch, trainset):
     fig.savefig(file_name)
     print("Plot saved to: {}".format(file_name))
     plt.close()
+
+
+def plot_nearest_component_unsupervised(args, features, labels, epoch, trainset):
+    """Find corresponding images to the nearests component. """
+    save_dir = os.path.join(args.model_dir, 'figures', 'nearcomp_unsup')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    feature_dim = features.shape[1]
+    pca = TruncatedSVD(n_components=feature_dim-1, random_state=10).fit(features)
+    for j, comp in enumerate(pca.components_):
+        proj = (features @ comp.T).numpy()
+        img_idx = np.argsort(np.abs(proj), axis=0)[::-1][:10]
+        nearest_vals = proj[img_idx]
+        nearest_data = trainset.data[img_idx]
+        fig, ax = plt.subplots(ncols=5, nrows=2, figsize=(5, 2))
+        i = 0
+        for r in range(2):
+            for c in range(5):
+                ax[r, c].imshow(nearest_data[i])
+                ax[r, c].set_xticks([])
+                ax[r, c].set_yticks([])
+                ax[r, c].spines['top'].set_visible(False)
+                ax[r, c].spines['right'].set_visible(False)
+                ax[r, c].spines['bottom'].set_linewidth(False)
+                ax[r, c].spines['left'].set_linewidth(False)
+                i+= 1
+        file_name = os.path.join(save_dir, f"nearest_comp{j}.png")
+        fig.savefig(file_name)
+        print("Plot saved to: {}".format(file_name))
+        plt.close()
 
 
 def plot_nearest_component_class(args, features, labels, epoch, trainset):
@@ -552,8 +655,9 @@ if __name__ == "__main__":
     parser.add_argument('--hist', help='plot histogram of cosine similarity of features', action='store_true')
     parser.add_argument('--pca', help='plot PCA singular values of feautres', action='store_true')
     parser.add_argument('--pca_epoch', help='plot PCA singular for different epochs', action='store_true')
-    parser.add_argument('--near_comp_sup', help='plot nearest component', action='store_true')
-    parser.add_argument('--near_comp_class', help='plot nearest component', action='store_true')
+    parser.add_argument('--nearcomp_sup', help='plot nearest component', action='store_true')
+    parser.add_argument('--nearcomp_unsup', help='plot nearest component', action='store_true')
+    parser.add_argument('--nearcomp_class', help='plot nearest component', action='store_true')
     parser.add_argument('--acc', help='plot accuracy over epochs', action='store_true')
     parser.add_argument('--traintest', help='plot train and test loss comparison plot', action='store_true')
     parser.add_argument('--heat', help='plot heatmap of cosine similarity between samples', action='store_true')
@@ -581,7 +685,7 @@ if __name__ == "__main__":
             gen_accuracy(args)
         plot_accuracy(args, path)
 
-    if args.pca or args.hist or args.hist_all or args.hist_paper or args.heat or args.near_comp or args.near_comp_class:
+    if args.pca or args.hist or args.heat or args.nearcomp_sup or args.nearcomp_unsup or args.nearcomp_class:
         ## load data and model
         params = utils.load_params(args.model_dir)
         net, epoch = tf.load_checkpoint(args.model_dir, args.epoch, eval_=True)
@@ -594,9 +698,11 @@ if __name__ == "__main__":
 
     if args.pca:
         plot_pca(args, features, labels, epoch)
-    if args.near_comp_sup:
+    if args.nearcomp_sup:
         plot_nearest_component_supervised(args, features, labels, epoch, trainset)
-    if args.near_comp_class:
+    if args.nearcomp_unsup:
+        plot_nearest_component_unsupervised(args, features, labels, epoch, trainset)
+    if args.nearcomp_class:
         plot_nearest_component_class(args, features, labels, epoch, trainset)
     if args.hist:
         plot_hist(args, features, labels, epoch)
