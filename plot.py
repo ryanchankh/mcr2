@@ -15,30 +15,25 @@ import utils
 
 
 def plot_loss(args):
-    ## create saving directory
-    loss_dir = os.path.join(args.model_dir, 'figures', 'loss')
-    if not os.path.exists(loss_dir):
-        os.makedirs(loss_dir)
+    """Plot theoretical loss and empirical loss. """
+    ## extract loss from csv
     file_dir = os.path.join(args.model_dir, 'losses.csv')
     data = pd.read_csv(file_dir)
-
-    ## extract loss from csv
     obj_loss_e = -data['loss'].ravel()
     dis_loss_e = data['discrimn_loss_e'].ravel()
     com_loss_e = data['compress_loss_e'].ravel()
     dis_loss_t = data['discrimn_loss_t'].ravel()
     com_loss_t = data['compress_loss_t'].ravel()
-    # com_loss_o = data['compress_loss_ortho'].ravel()
     obj_loss_t = dis_loss_t - com_loss_t
 
     ## Theoretical Loss
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
     num_iter = np.arange(len(obj_loss_t))
-    ax.plot(num_iter, obj_loss_t, label=r'$\mathcal{L}^d-\mathcal{L}^c$', 
+    ax.plot(num_iter, obj_loss_t, label=r'$\Delta R$', 
                 color='green', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, dis_loss_t, label=r'$\mathcal{L}^d$', 
+    ax.plot(num_iter, dis_loss_t, label=r'$R$', 
                 color='royalblue', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, com_loss_t, label=r'$\mathcal{L}^c$', 
+    ax.plot(num_iter, com_loss_t, label=r'$R^c$', 
                 color='coral', linewidth=1.0, alpha=0.8)
     ax.set_ylabel('Loss', fontsize=10)
     ax.set_xlabel('Number of iterations', fontsize=10)
@@ -47,6 +42,11 @@ def plot_loss(args):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     plt.tight_layout()
+
+    ## create saving directory
+    loss_dir = os.path.join(args.model_dir, 'figures', 'loss')
+    if not os.path.exists(loss_dir):
+        os.makedirs(loss_dir)
     file_name = os.path.join(loss_dir, 'loss_theoretical.png')
     plt.savefig(file_name, dpi=400)
     print("Plot saved to: {}".format(file_name))
@@ -58,20 +58,15 @@ def plot_loss(args):
     ## Empirial Loss
     fig, ax = plt.subplots(1, 1, figsize=(7, 5), sharey=True, sharex=True, dpi=400)
     num_iter = np.arange(len(obj_loss_e))
-    ax.plot(num_iter, obj_loss_e, label=r'$\widehat{\mathcal{L}^d}-\widehat{\mathcal{L}^c}$', 
+    ax.plot(num_iter, obj_loss_e, label=r'$\Delta R$', 
                 color='green', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, dis_loss_e, label=r'$\widehat{\mathcal{L}^d}$', 
+    ax.plot(num_iter, dis_loss_e, label=r'$R$', 
                 color='royalblue', linewidth=1.0, alpha=0.8)
-    ax.plot(num_iter, com_loss_e, label=r'$\widehat{\mathcal{L}^c}$', 
+    ax.plot(num_iter, com_loss_e, label=r'$R^c$', 
                 color='coral', linewidth=1.0, alpha=0.8)
-    # if len(com_loss_o) != 0:
-        # ax.plot(num_iter, com_loss_o, label=r'ortho', 
-            # color='black', linewidth=1.0, alpha=0.8)
     ax.set_ylabel('Loss', fontsize=10)
     ax.set_xlabel('Number of iterations', fontsize=10)
     ax.legend(loc='lower right', prop={"size": 15}, ncol=3, framealpha=0.5)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
     ax.set_title("Empirical Loss")
     plt.tight_layout()
     file_name = os.path.join(loss_dir, 'loss_empirical.png')
@@ -83,7 +78,8 @@ def plot_loss(args):
     print("Plot saved to: {}".format(file_name))
 
 
-def plot_loss_paper(args):
+def plot_loss_log(args):
+    """Plot theoretical log loss. """
     def moving_average(arr, size=(9, 9)):
         assert len(size) == 2
         mean_ = []
@@ -128,7 +124,10 @@ def plot_loss_paper(args):
     [tick.label.set_fontsize(14) for tick in ax.yaxis.get_major_ticks()]
     plt.tight_layout()
 
-    loss_dir = os.path.join(args.model_dir, "loss_paper")
+    # save
+    loss_dir = os.path.join(args.model_dir, "figures", "loss_log")
+    if not os.path.exists(loss_dir):
+        os.mkdir(loss_dir)
     file_name = os.path.join(loss_dir, 'loss_theoretical.png')
     plt.savefig(file_name, dpi=400)
     print("Plot saved to: {}".format(file_name))
@@ -139,6 +138,7 @@ def plot_loss_paper(args):
 
 
 def plot_pca(args, features, labels, epoch):
+    """Plot PCA of learned features. """
     ## create save folder
     pca_dir = os.path.join(args.model_dir, 'figures', 'pca')
     if not os.path.exists(pca_dir):
@@ -155,9 +155,6 @@ def plot_pca(args, features, labels, epoch):
         sig_vals.append((pca.singular_values_))
 
     ## plot features
-    plt.rc('text', usetex=False)
-    plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
     fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=500)
     x_min = np.min([len(sig_val) for sig_val in sig_vals])
     ax.plot(np.arange(x_min), sig_vals[0][:x_min], '-p', markersize=3, markeredgecolor='black',
@@ -172,21 +169,10 @@ def plot_pca(args, features, labels, epoch):
                 alpha=0.6, linewidth=1.0, color=color[c])
     ax.set_xticks(np.arange(0, x_min, 5))
     ax.set_yticks(np.arange(0, 35, 5))
-    # for c, sig_val in enumerate(sig_vals[1:]):
-    #     ax.plot(np.arange(x_min), sig_val[:x_min], marker='o', markersize=2, 
-    #                 label=f'class - {c}', alpha=0.6)
-    # ax.legend(loc='upper right', frameon=True, fancybox=True, prop={"size": 12}, ncol=2, framealpha=0.5)
     ax.set_xlabel("components", fontsize=14)
     ax.set_ylabel("sigular values", fontsize=14)
-    # ax.set_title(f"PCA on features (Epoch: {epoch})")
-    # ax.spines['top'].set_visible(False)
-    # ax.spines['right'].set_visible(False)
-    # ax.spines['bottom'].set_visible(False)
-    # ax.spines['left'].set_visible(False)
     [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
     [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
-    # ax.grid(True, color='white')
-    # ax.set_facecolor('whitesmoke')
     fig.tight_layout()
     
     np.save(os.path.join(pca_dir, "sig_vals.npy"), sig_vals)
@@ -199,7 +185,79 @@ def plot_pca(args, features, labels, epoch):
     plt.close()
 
 
+def plot_pca_epoch(args):
+    """Plot PCA for different epochs in the same plot. """
+    EPOCHS = [0, 10, 100, 500]
+
+    params = utils.load_params(args.model_dir)
+    transforms = tf.load_transforms('test')
+    trainset = tf.load_trainset(params['data'], transforms)
+    trainloader = DataLoader(trainset, batch_size=200, num_workers=4)
+
+    sig_vals = []
+    for epoch in EPOCHS:
+        epoch_ = epoch - 1
+        if epoch_ == -1: # randomly initialized
+            net = tf.load_architectures(params['arch'], params['fd'])
+        else:
+            net, epoch = tf.load_checkpoint(args.model_dir, epoch=epoch_, eval_=True)
+        features, labels = tf.get_features(net, trainloader)
+        if args.class_ is not None:
+            features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
+                            num_classes=trainset.num_classes, stack=False)
+            features_ = features_sort[args.class_]
+        else:
+            features_ = features.numpy()
+        n_comp = np.min([args.comp, features.shape[1]])
+        pca = PCA(n_components=n_comp).fit(features_)
+        sig_vals.append(pca.singular_values_)
+
+    ## plot singular values
+    plt.rc('text', usetex=True)
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = ['Times New Roman']
+    fig, ax = plt.subplots(1, 1, figsize=(7, 5), dpi=400)
+    x_min = np.min([len(sig_val) for sig_val in sig_vals])
+    if args.class_ is not None:
+        ax.set_xticks(np.arange(0, x_min, 10))
+        ax.set_yticks(np.linspace(0, 40, 9))
+        ax.set_ylim(0, 40)
+    else:
+        ax.set_xticks(np.arange(0, x_min, 10))
+        ax.set_yticks(np.linspace(0, 80, 9))
+        ax.set_ylim(0, 90)
+    for epoch, sig_val in zip(EPOCHS, sig_vals):
+        ax.plot(np.arange(x_min), sig_val[:x_min], marker='', markersize=5, 
+                    label=f'epoch - {epoch}', alpha=0.6)
+    ax.legend(loc='upper right', frameon=True, fancybox=True, prop={"size": 8}, ncol=1, framealpha=0.5)
+    ax.set_xlabel("components")
+    ax.set_ylabel("sigular values")
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
+    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
+    ax.grid(True, color='white')
+    ax.set_facecolor('whitesmoke')
+    fig.tight_layout()
+
+    ## save
+    save_dir = os.path.join(args.model_dir, 'figures', 'pca')
+    np.save(os.path.join(save_dir, "sig_vals_epoch.npy"), sig_vals)
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    file_name = os.path.join(save_dir, f"pca_class{args.class_}.png")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    file_name = os.path.join(save_dir, f"pca_class{args.class_}.pdf")
+    fig.savefig(file_name)
+    print("Plot saved to: {}".format(file_name))
+    plt.close()
+
+
 def plot_hist(args, features, labels, epoch):
+    """Plot histogram of class vs. class. """
     ## create save folder
     hist_folder = os.path.join(args.model_dir, 'figures', 'hist')
     if not os.path.exists(hist_folder):
@@ -230,130 +288,8 @@ def plot_hist(args, features, labels, epoch):
             print("Plot saved to: {}".format(file_name))
 
 
-def plot_hist_all(args, features, labels, epoch):
-    ## create save folder
-    hist_folder = os.path.join(args.model_dir, 'figures', 'hist_all')
-    if not os.path.exists(hist_folder):
-        os.makedirs(hist_folder)
-    if not os.path.exists(os.path.join(hist_folder, "sim_mat")):
-        os.makedirs(os.path.join(hist_folder, "sim_mat"))
-    
-
-    num_classes = trainset.num_classes
-    features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
-                            num_classes=num_classes, stack=False)
-
-    plt.rc('text', usetex=False)
-    plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman'] 
-    fig, ax = plt.subplots(ncols=10, nrows=10, figsize=(10, 10), dpi=250, sharex=True, sharey=True)
-    for j in range(10):
-        for i in range(10):
-            sim_mat = features_sort[i] @ features_sort[j].T
-            if i == j:
-                sim_mat = sim_mat[np.triu_indices(sim_mat.shape[0], k=1)]
-                h1 = ax[i, j].hist(sim_mat, bins=np.arange(10)-0.05, color='green', alpha=0.3, histtype='bar', density=True)
-            else:
-                sim_mat = sim_mat.reshape(-1)
-                h2 = ax[i, j].hist(sim_mat, bins=np.arange(10)-0.05, color='red', alpha=0.3, histtype='bar', density=True)
-            ax[i, j].spines['right'].set_visible(False)
-            ax[i, j].spines['top'].set_visible(False)
-            ax[i, j].spines['bottom'].set_visible(False)
-            ax[i, j].spines['left'].set_visible(False) 
-            
-            ax[i, j].grid(True, color='white', axis='y')
-            ax[i, j].set_xlim(0, 1.)
-            ax[i, j].set_facecolor('whitesmoke')
-            
-            if i == 0:
-                ax[i, j].set_title(f'class {j}')
-            if j == 0:
-                ax[i, j].set_ylabel(f'class {i}')
-            
-            np.save(os.path.join(hist_folder, "sim_mat", f"sim_mat{i}_{j}.npy"), sim_mat)
-    fig.text(0.5, -0.01, 'cosine similarity', ha='center')
-    fig.text(-0.01, 0.5, 'count', va='center', rotation='vertical')
-    plt.tight_layout()
-    plt.show()
-
-    file_name = os.path.join(hist_folder, f"hist_all_epoch{epoch}.png")
-    fig.savefig(file_name)
-    print("Plot saved to: {}".format(file_name))
-    file_name = os.path.join(hist_folder, f"hist_all_epoch{epoch}.pdf")
-    fig.savefig(file_name)
-    plt.close()
-    print("Plot saved to: {}".format(file_name))
-
-
-def plot_hist_paper(args, features, labels, epoch):
-    ## create save folder
-    hist_folder = os.path.join(args.model_dir, 'figures', 'hist_paper')
-    if not os.path.exists(hist_folder):
-        os.makedirs(hist_folder)
-
-    num_classes = trainset.num_classes
-    features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
-                            num_classes=num_classes, stack=False)
-    i = 0
-    ## inside class
-    plt.rc('text', usetex=False)
-    plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
-    sim_mat = features_sort[i] @ features_sort[i].T
-    sim_mat = sim_mat[np.triu_indices(sim_mat.shape[0], k=1)][-500:]
-    ax.hist(sim_mat, bins=30, color='green', alpha=0.4, density=True)
-    ax.grid(True, color='white', axis='y')
-    ax.set_xlim(0, 1.)
-    ax.set_facecolor('whitesmoke')
-    ax.set_xlabel("cosine similarity")
-    ax.set_ylabel("density")
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False) 
-    fig.tight_layout()
-
-    file_name = os.path.join(hist_folder, f"hist_0v0.png")
-    fig.savefig(file_name)
-    print("Plot saved to: {}".format(file_name))
-    file_name = os.path.join(hist_folder, f"hist_0v0.pdf")
-    fig.savefig(file_name)
-    plt.close()
-    print("Plot saved to: {}".format(file_name))
-
-    ## outside class
-    plt.rc('text', usetex=False)
-    plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman'] #+ plt.rcParams['font.serif']
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=250)
-    temp = []
-    for j in range(num_classes):
-        sim_mat = (features_sort[i] @ features_sort[j].T).reshape(-1)
-        temp.append(sim_mat)
-    temp = np.hstack(temp)
-    ax.hist(temp, bins=30, color='red', alpha=0.4, density=True)
-    ax.grid(True, color='white', axis='y')
-    ax.set_xlim(0, 1.)
-    ax.set_facecolor('whitesmoke')
-    ax.set_xlabel("cosine similarity")
-    ax.set_ylabel("density")
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False) 
-    fig.tight_layout()
-
-    file_name = os.path.join(hist_folder, f"hist_0vall.png")
-    fig.savefig(file_name)
-    print("Plot saved to: {}".format(file_name))
-    file_name = os.path.join(hist_folder, f"hist_0vall.pdf")
-    fig.savefig(file_name)
-    plt.close()
-    print("Plot saved to: {}".format(file_name))
-
-
 def plot_traintest(args, path_test):
+    """Plot traintest loss. """
     def process_df(data):
         epochs = data['epoch'].ravel().max()
         mean_, max_, min_ = [], [], []
@@ -446,7 +382,9 @@ def plot_traintest(args, path_test):
     print("Plot saved to: {}".format(file_name))
     plt.close()
     
-def plot_nearest_component(args, features, labels, epoch, trainset):
+
+def plot_nearest_component_supervised(args, features, labels, epoch, trainset):
+    """Find corresponding images to the nearests component. """
     ## perform PCA on features
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=trainset.num_classes, stack=False)
@@ -468,7 +406,7 @@ def plot_nearest_component(args, features, labels, epoch, trainset):
     plt.ylabel("per class")
     
     ## save
-    save_dir = os.path.join(args.model_dir, 'figures', 'pca')
+    save_dir = os.path.join(args.model_dir, 'figures', 'nearcomp_sup')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     file_name = os.path.join(save_dir, f"nearest_data.png")
@@ -479,11 +417,9 @@ def plot_nearest_component(args, features, labels, epoch, trainset):
     print("Plot saved to: {}".format(file_name))
     plt.close()
 
-def plot_nearest_component_class(args, features, labels, epoch, trainset):
-    save_dir = os.path.join(args.model_dir, 'figures', 'nearcomp')
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
 
+def plot_nearest_component_class(args, features, labels, epoch, trainset):
+    """Find corresponding images to the nearests component per class. """
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=trainset.num_classes, stack=False)
     data_sort, _ = utils.sort_dataset(trainset.data, labels.numpy(), 
@@ -512,9 +448,12 @@ def plot_nearest_component_class(args, features, labels, epoch, trainset):
                 ax[r, c].set_xlabel(f"proj: {nearest_val[r][c]:.2f}")
                 if c == 0:
                     ax[r, c].set_ylabel(f"comp {r}")
-        
         fig.tight_layout()
+
         ## save
+        save_dir = os.path.join(args.model_dir, 'figures', 'nearcomp')
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
         file_name = os.path.join(save_dir, f"nearest_class{class_}.png")
         fig.savefig(file_name)
         print("Plot saved to: {}".format(file_name))
@@ -524,77 +463,8 @@ def plot_nearest_component_class(args, features, labels, epoch, trainset):
         plt.close()
 
 
-def plot_pca_epoch(args):
-    EPOCHS = [0, 10, 100, 500]
-
-    params = utils.load_params(args.model_dir)
-    transforms = tf.load_transforms('test')
-    trainset = tf.load_trainset(params['data'], transforms)
-    trainloader = DataLoader(trainset, batch_size=200, num_workers=4)
-
-    sig_vals = []
-    for epoch in EPOCHS:
-        epoch_ = epoch - 1
-        if epoch_ == -1: # randomly initialized
-            net = tf.load_architectures(params['arch'], params['fd'])
-        else:
-            net, epoch = tf.load_checkpoint(args.model_dir, epoch=epoch_, eval_=True)
-        features, labels = tf.get_features(net, trainloader)
-        if args.class_ is not None:
-            features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
-                            num_classes=trainset.num_classes, stack=False)
-            features_ = features_sort[args.class_]
-        else:
-            features_ = features.numpy()
-        n_comp = np.min([args.comp, features.shape[1]])
-        pca = PCA(n_components=n_comp).fit(features_)
-        sig_vals.append(pca.singular_values_)
-
-    ## plot singular values
-    plt.rc('text', usetex=True)
-    plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman']
-    fig, ax = plt.subplots(1, 1, figsize=(7, 5), dpi=400)
-    x_min = np.min([len(sig_val) for sig_val in sig_vals])
-    if args.class_ is not None:
-        ax.set_xticks(np.arange(0, x_min, 10))
-        ax.set_yticks(np.linspace(0, 40, 9))
-        ax.set_ylim(0, 40)
-    else:
-        ax.set_xticks(np.arange(0, x_min, 10))
-        ax.set_yticks(np.linspace(0, 80, 9))
-        ax.set_ylim(0, 90)
-    for epoch, sig_val in zip(EPOCHS, sig_vals):
-        ax.plot(np.arange(x_min), sig_val[:x_min], marker='', markersize=5, 
-                    label=f'epoch - {epoch}', alpha=0.6)
-    ax.legend(loc='upper right', frameon=True, fancybox=True, prop={"size": 8}, ncol=1, framealpha=0.5)
-    ax.set_xlabel("components")
-    ax.set_ylabel("sigular values")
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    [tick.label.set_fontsize(12) for tick in ax.xaxis.get_major_ticks()] 
-    [tick.label.set_fontsize(12) for tick in ax.yaxis.get_major_ticks()]
-    ax.grid(True, color='white')
-    ax.set_facecolor('whitesmoke')
-    fig.tight_layout()
-
-    ## save
-    save_dir = os.path.join(args.model_dir, 'figures', 'pca')
-    np.save(os.path.join(save_dir, "sig_vals_epoch.npy"), sig_vals)
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    file_name = os.path.join(save_dir, f"pca_class{args.class_}.png")
-    fig.savefig(file_name)
-    print("Plot saved to: {}".format(file_name))
-    file_name = os.path.join(save_dir, f"pca_class{args.class_}.pdf")
-    fig.savefig(file_name)
-    print("Plot saved to: {}".format(file_name))
-    plt.close()
-
-
 def plot_accuracy(args, path):
+    """Plot train and test accuracy. """
     def moving_average(arr, size=(9, 9)):
         assert len(size) == 2
         mean_ = []
@@ -638,6 +508,7 @@ def plot_accuracy(args, path):
 
 
 def plot_heatmap(args, features, labels, epoch):
+    """Plot heatmap of cosine simliarity for all features. """
     num_classes = trainset.num_classes
     features_sort, _ = utils.sort_dataset(features.numpy(), labels.numpy(), 
                             num_classes=num_classes, stack=False)
@@ -653,17 +524,12 @@ def plot_heatmap(args, features, labels, epoch):
     fig.colorbar(im, pad=0.02, drawedges=0, ticks=[0, 0.5, 1])
     ax.set_xticks(np.linspace(0, 50000, 6))
     ax.set_yticks(np.linspace(0, 50000, 6))
-    # ax.spines['right'].set_visible(False)
-    # ax.spines['top'].set_visible(False)
-    # ax.spines['bottom'].set_visible(False)
-    # ax.spines['left'].set_visible(False)
     [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()] 
     [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
     fig.tight_layout()
 
     
     save_dir = os.path.join(args.model_dir, 'figures', 'heatmaps')
-    # os.mkdir(save_dir+"/sim_mat/")
     for i in range(500):
         np.save(save_dir+f"/sim_mat/sim_mat{i}.npy", sim_mat[i*100:(i+1)*100])
     if not os.path.exists(save_dir):
@@ -682,13 +548,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Ploting')
     parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
     parser.add_argument('--loss', help='plot losses from training', action='store_true')
-    parser.add_argument('--loss_paper', help='plot losses from training', action='store_true')
+    parser.add_argument('--loss_log', help='plot losses from training', action='store_true')
     parser.add_argument('--hist', help='plot histogram of cosine similarity of features', action='store_true')
-    parser.add_argument('--hist_all', help='plot histogram of cosine similarity of features for all classes', action='store_true')
-    parser.add_argument('--hist_paper', help='plot histogram of cosine similarity of features', action='store_true')
     parser.add_argument('--pca', help='plot PCA singular values of feautres', action='store_true')
     parser.add_argument('--pca_epoch', help='plot PCA singular for different epochs', action='store_true')
-    parser.add_argument('--near_comp', help='plot nearest component', action='store_true')
+    parser.add_argument('--near_comp_sup', help='plot nearest component', action='store_true')
     parser.add_argument('--near_comp_class', help='plot nearest component', action='store_true')
     parser.add_argument('--acc', help='plot accuracy over epochs', action='store_true')
     parser.add_argument('--traintest', help='plot train and test loss comparison plot', action='store_true')
@@ -701,8 +565,8 @@ if __name__ == "__main__":
     
     if args.loss:
         plot_loss(args)
-    if args.loss_paper:
-        plot_loss_paper(args)
+    if args.loss_log:
+        plot_loss_log(args)
     if args.pca_epoch:
         plot_pca_epoch(args)
 
@@ -730,15 +594,11 @@ if __name__ == "__main__":
 
     if args.pca:
         plot_pca(args, features, labels, epoch)
-    if args.near_comp:
-        plot_nearest_component(args, features, labels, epoch, trainset)
+    if args.near_comp_sup:
+        plot_nearest_component_supervised(args, features, labels, epoch, trainset)
     if args.near_comp_class:
         plot_nearest_component_class(args, features, labels, epoch, trainset)
     if args.hist:
         plot_hist(args, features, labels, epoch)
-    if args.hist_all:
-        plot_hist_all(args, features, labels, epoch)
-    if args.hist_paper:
-        plot_hist_paper(args, features, labels, epoch)
     if args.heat:
         plot_heatmap(args, features, labels, epoch)
