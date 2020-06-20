@@ -159,4 +159,4 @@ For technical details and full experimental results, please check [the paper](ht
 ```
 
 ## Contact
-Please contact ryanchankh@berkeley.edu yyu@eecs.berkeley.edu if you have any question on the codes.
+Please contact ryanchankh@berkeley.edu and yyu@eecs.berkeley.edu if you have any question on the codes.
