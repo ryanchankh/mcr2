@@ -146,3 +146,17 @@ $ python3 train_selfsup.py --arch resnet18stl --data stl10 --fd 128 --epo 100 --
 ## Lisence and Contributing
 - This README is formatted based on [paperswithcode](https://github.com/paperswithcode/releasing-research-code).
 - Feel free to post issues via Github. 
+
+## Reference
+For technical details and full experimental results, please check [the paper](https://arxiv.org/pdf/1901.08573.pdf).
+```
+@article{yu2020learning, 
+	author = {Yaodong Yu and Kwan Ho Ryan Chan and Chong You and Chaobing Song and Yi Ma}, 
+	title = {Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction}, 
+	journal = {arXiv preprint arXiv:2006.08558},
+	year = {2020}
+}
+```
+
+## Contact
+Please contact ryanchankh@berkeley.edu yyu@eecs.berkeley.edu if you have any question on the codes.
