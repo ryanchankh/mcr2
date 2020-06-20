@@ -554,7 +554,7 @@ def plot_nearest_component_class(args, features, labels, epoch, trainset):
         fig.tight_layout()
 
         ## save
-        save_dir = os.path.join(args.model_dir, 'figures', 'nearcomp')
+        save_dir = os.path.join(args.model_dir, 'figures', 'nearcomp_class')
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         file_name = os.path.join(save_dir, f"nearest_class{class_}.png")
