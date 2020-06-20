@@ -148,10 +148,10 @@ $ python3 train_selfsup.py --arch resnet18stl --data stl10 --fd 128 --epo 100 --
 - Feel free to post issues via Github. 
 
 ## Reference
-For technical details and full experimental results, please check [the paper](https://arxiv.org/pdf/1901.08573.pdf).
+For technical details and full experimental results, please check [the paper](https://arxiv.org/abs/2006.08558).
 ```
 @article{yu2020learning, 
-	author = {Yaodong Yu and Kwan Ho Ryan Chan and Chong You and Chaobing Song and Yi Ma}, 
+	author = {Yu, Yaodong and Chan, Kwan Ho Ryan and You, Chong and Song, Chaobing and Ma, Yi}, 
 	title = {Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction}, 
 	journal = {arXiv preprint arXiv:2006.08558},
 	year = {2020}
