@@ -81,6 +81,8 @@ if __name__ == "__main__":
     parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
     parser.add_argument('--test', help='create losses_test.csv', action='store_true')
     parser.add_argument('--train_acc', help='create accuracy.csv for training accuracy', action='store_true')
+
+    parser.add_argument('--n_comp', type=int, default=30, help='Number of components for SVD.')
     args = parser.parse_args()
 
     if args.test:
