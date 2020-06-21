@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA, TruncatedSVD
 from torch.utils.data import DataLoader
 
-from generate import gen_testloss, gen_accuracy
+from generate import gen_testloss, gen_train_accuracy
 import train_func as tf
 import utils
 
