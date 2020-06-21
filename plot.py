@@ -677,12 +677,12 @@ if __name__ == "__main__":
     if args.traintest:
         path = os.path.join(args.model_dir, 'losses_test.csv')
         if not os.path.exists(path):
-            gen_test(args)
+            gen_testloss(args)
         plot_traintest(args, path)
     if args.acc:
         path = os.path.join(args.model_dir, 'accuracy.csv')
         if not os.path.exists(path):
-            gen_accuracy(args)
+            gen_training_accuracy(args)
         plot_accuracy(args, path)
 
     if args.pca or args.hist or args.heat or args.nearcomp_sup or args.nearcomp_unsup or args.nearcomp_class:
