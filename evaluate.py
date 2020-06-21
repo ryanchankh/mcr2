@@ -51,17 +51,18 @@ def nearsub(args, train_features, train_labels, test_features, test_labels):
     num_classes = train_labels.numpy().max() + 1 # should be correct most of the time
     features_sort, _ = utils.sort_dataset(train_features.numpy(), train_labels.numpy(), 
                                           num_classes=num_classes, stack=False)
+    fd = features_sort[0].shape[1]
     for j in range(num_classes):
         pca = PCA(n_components=args.n_comp).fit(features_sort[j]) 
         pca_subspace = pca.components_.T
         mean = np.mean(features_sort[j], axis=0)
-        pca_j = (np.eye(params["fd"]) - pca_subspace @ pca_subspace.T) \
+        pca_j = (np.eye(fd) - pca_subspace @ pca_subspace.T) \
                         @ (test_features.numpy() - mean).T
         score_pca_j = np.linalg.norm(pca_j, ord=2, axis=0)
 
         svd = TruncatedSVD(n_components=args.n_comp).fit(features_sort[j])
         svd_subspace = svd.components_.T
-        svd_j = (np.eye(params["fd"]) - svd_subspace @ svd_subspace.T) \
+        svd_j = (np.eye(fd) - svd_subspace @ svd_subspace.T) \
                         @ (test_features.numpy()).T
         score_svd_j = np.linalg.norm(svd_j, ord=2, axis=0)
         
