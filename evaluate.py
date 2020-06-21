@@ -73,7 +73,7 @@ def nearsub(args, train_features, train_labels, test_features, test_labels):
     acc_svd = utils.compute_accuracy(test_predict_svd, test_labels.numpy())
     print('PCA: {}'.format(acc_pca))
     print('SVD: {}'.format(acc_svd))
-    return acc_pca
+    return acc_svd
 
 def kmeans(args, train_features, train_labels, test_features, test_labels):
     """Perform KMeans clustering. 

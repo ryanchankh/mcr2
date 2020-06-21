@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader
 
-from evaluate import svm
+from evaluate import nearsub
 from loss import MaximalCodingRateReduction
 import train_func as tf
 import utils
@@ -44,7 +44,7 @@ def gen_testloss(args):
     print("Finished generating test loss.")
 
 
-def gen_accuracy(args):
+def gen_training_accuracy(args):
     # load data and model
     params = utils.load_params(args.model_dir)
     ckpt_dir = os.path.join(args.model_dir, 'checkpoints')
@@ -70,7 +70,7 @@ def gen_accuracy(args):
         testloader = DataLoader(testset, batch_size=500, num_workers=4)
         test_features, test_labels = tf.get_features(net, testloader, verbose=False)
 
-        acc_train, acc_test = svm(args, train_features, train_labels, test_features, test_labels)
+        acc_train, acc_test = nearsub(args, train_features, train_labels, test_features, test_labels)
         utils.save_state(args.model_dir, epoch, acc_train, acc_test, filename='accuracy.csv')
     print("Finished generating accuracy.")
 
@@ -80,10 +80,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generating files')
     parser.add_argument('--model_dir', type=str, help='base directory for saving PyTorch model.')
     parser.add_argument('--test', help='create losses_test.csv', action='store_true')
-    parser.add_argument('--acc', help='create accuracy.csv', action='store_true')
+    parser.add_argument('--train_acc', help='create accuracy.csv for training accuracy', action='store_true')
     args = parser.parse_args()
 
     if args.test:
         gen_testloss(args)
     if args.acc:
-        gen_accuracy(args)
+        gen_training_accuracy(args)
