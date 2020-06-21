@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader
 
-from evaluate import nearsub
+from evaluate import svm
 from loss import MaximalCodingRateReduction
 import train_func as tf
 import utils
@@ -70,7 +70,7 @@ def gen_training_accuracy(args):
         testloader = DataLoader(testset, batch_size=500, num_workers=4)
         test_features, test_labels = tf.get_features(net, testloader, verbose=False)
 
-        acc_train, acc_test = nearsub(args, train_features, train_labels, test_features, test_labels)
+        acc_train, acc_test = svm(args, train_features, train_labels, test_features, test_labels)
         utils.save_state(args.model_dir, epoch, acc_train, acc_test, filename='accuracy.csv')
     print("Finished generating accuracy.")
 
