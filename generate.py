@@ -85,5 +85,5 @@ if __name__ == "__main__":
 
     if args.test:
         gen_testloss(args)
-    if args.acc:
+    if args.train_acc:
         gen_training_accuracy(args)
