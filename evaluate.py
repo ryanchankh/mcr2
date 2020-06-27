@@ -39,7 +39,7 @@ def knn(args, train_features, train_labels, test_features, test_labels):
     return acc
 
 
-def nearsub(args, train_features, train_labels, test_features, test_labels):
+def nearsub(args, train_features, train_labels, test_features, test_labels, num_classes):
     """Perform nearest subspace classification.
     
     Options:
@@ -48,7 +48,6 @@ def nearsub(args, train_features, train_labels, test_features, test_labels):
     """
     scores_pca = []
     scores_svd = []
-    num_classes = train_labels.numpy().max() + 1 # should be correct most of the time
     features_sort, _ = utils.sort_dataset(train_features.numpy(), train_labels.numpy(), 
                                           num_classes=num_classes, stack=False)
     fd = features_sort[0].shape[1]
@@ -145,7 +144,7 @@ if __name__ == '__main__':
     if args.knn:
         knn(args, train_features, train_labels, test_features, test_labels)
     if args.nearsub:
-        nearsub(args, train_features, train_labels, test_features, test_labels)
+        nearsub(args, train_features, train_labels, test_features, test_labels, trainset.num_classes)
     if args.kmeans:
         kmeans(args, train_features, train_labels)
     if args.ensc:
