@@ -281,9 +281,25 @@ def membership_to_label(membership):
         labels[i] = np.argmax(membership[:, i, i])
     return labels
 
+
 def one_hot(x, K):
     """Turn labels x into one hot vector of K classes. """
     return np.array(x[:, None] == np.arange(K)[None, :], dtype=int)
+
+
+def filter_class(dataset, class_to_keep=None):
+    """Filter base on class."""
+    if class_to_keep is None:
+        return dataset
+    indices = []
+    for c in class_to_keep:
+        idx = np.argwhere(dataset.targets == c).reshape(-1).tolist()
+        indices += idx
+    idx_keep = np.sort(indices)
+    dataset.data = trainset.data[idx_keep]
+    dataset.targets = trainset.targets[idx_keep]
+    dataset.num_classes = len(class_to_keep)
+    return dataset
 
 
 ## Additional Augmentations
@@ -316,3 +332,5 @@ def sparse2coarse(targets):
                        9, 19,  2, 10,  0,  1, 16, 12,  9, 13, 15, 13, 16, 19,  2,  4,  6,
                       19,  5,  5,  8, 19, 18,  1,  2, 15,  6,  0, 17,  8, 14, 13]
     return np.array(coarse_targets)[targets]
+
+

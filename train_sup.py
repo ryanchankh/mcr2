@@ -39,6 +39,8 @@ parser.add_argument('--lcr', type=float, default=0.,
                     help='label corruption ratio (default: 0)')
 parser.add_argument('--lcs', type=int, default=10,
                     help='label corruption seed for index randomization (default: 10)')
+parser.add_argument('--class_to_keep', type=list, default=None,
+                    help='select classes to keep (default: None)')
 parser.add_argument('--tail', type=str, default='',
                     help='extra information to add to folder name')
 parser.add_argument('--transform', type=str, default='default',
@@ -83,6 +85,7 @@ else:
 transforms = tf.load_transforms(args.transform)
 trainset = tf.load_trainset(args.data, transforms, path=args.data_dir)
 trainset = tf.corrupt_labels(trainset, args.lcr, args.lcs)
+trainset = tf.filter_class(trainset, args.class_to_keep)
 trainloader = DataLoader(trainset, batch_size=args.bs, drop_last=True, num_workers=4)
 criterion = MaximalCodingRateReduction(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
