@@ -693,6 +693,8 @@ if __name__ == "__main__":
         trainset = tf.load_trainset(params['data'], transforms)
         if 'lcr' in params.keys(): # supervised corruption case
             trainset = tf.corrupt_labels(trainset, params['lcr'], params['lcs'])
+        if 'class_to_keep' in params.keys():
+            trainset = tf.filter_class(trainset, params['class_to_keep'])
         trainloader = DataLoader(trainset, batch_size=200, num_workers=4)
         features, labels = tf.get_features(net, trainloader)
 
