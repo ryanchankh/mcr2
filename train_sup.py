@@ -39,7 +39,7 @@ parser.add_argument('--lcr', type=float, default=0.,
                     help='label corruption ratio (default: 0)')
 parser.add_argument('--lcs', type=int, default=10,
                     help='label corruption seed for index randomization (default: 10)')
-parser.add_argument('--class_to_keep', type=list, default=None,
+parser.add_argument('--class_to_keep', nargs='+', type=int, default=None,
                     help='select classes to keep (default: None)')
 parser.add_argument('--tail', type=str, default='',
                     help='extra information to add to folder name')
