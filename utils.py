@@ -18,10 +18,13 @@ def sort_dataset(data, labels, num_classes=10, stack=False):
         sorted data (np.ndarray), sorted_labels (np.ndarray)
 
     """
-    sorted_data = [[] for _ in range(num_classes)]
-    for i, lbl in enumerate(labels):
-        sorted_data[lbl].append(data[i])
-    sorted_data = [np.stack(class_data) for class_data in sorted_data]
+    unique_labels = np.unique(labels)
+    num_classes = unique_labels.size
+    class_indices = []
+    for lbl in unique_labels:
+        idx = np.argwhere(labels == lbl).squeeze()
+        class_indices.append(idx)
+    sorted_data = [np.stack(data[idx]) for idx in class_indices]
     sorted_labels = [np.repeat(i, (len(sorted_data[i]))) for i in range(num_classes)]
     if stack:
         sorted_data = np.vstack(sorted_data)
