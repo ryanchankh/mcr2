@@ -291,6 +291,7 @@ def filter_class(dataset, class_to_keep=None):
     """Filter base on class."""
     if class_to_keep is None:
         return dataset
+    class_to_keep = np.int32(class_to_keep)
     indices = []
     for c in class_to_keep:
         idx = np.argwhere(dataset.targets == c).reshape(-1).tolist()
