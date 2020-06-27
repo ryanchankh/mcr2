@@ -296,8 +296,8 @@ def filter_class(dataset, class_to_keep=None):
         idx = np.argwhere(dataset.targets == c).reshape(-1).tolist()
         indices += idx
     idx_keep = np.sort(indices)
-    dataset.data = trainset.data[idx_keep]
-    dataset.targets = trainset.targets[idx_keep]
+    dataset.data = dataset.data[idx_keep]
+    dataset.targets = dataset.targets[idx_keep]
     dataset.num_classes = len(class_to_keep)
     return dataset
 
