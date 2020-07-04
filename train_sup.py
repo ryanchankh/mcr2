@@ -35,6 +35,8 @@ parser.add_argument('--gam2', type=float, default=1.,
                     help='gamma2 for tuning empirical loss (default: 1.)')
 parser.add_argument('--eps', type=float, default=0.5,
                     help='eps squared (default: 0.5)')
+parser.add_argument('--corrupt', type=str, default="default",
+                    help='corruption mode. See corrupt.py for details. (default: default)')
 parser.add_argument('--lcr', type=float, default=0.,
                     help='label corruption ratio (default: 0)')
 parser.add_argument('--lcs', type=int, default=10,
@@ -82,7 +84,7 @@ else:
     net = tf.load_architectures(args.arch, args.fd)
 transforms = tf.load_transforms(args.transform)
 trainset = tf.load_trainset(args.data, transforms, path=args.data_dir)
-trainset = tf.corrupt_labels(trainset, args.lcr, args.lcs)
+trainset = tf.corrupt_labels(args.corrupt)(trainset, args.lcr, args.lcs)
 trainloader = DataLoader(trainset, batch_size=args.bs, drop_last=True, num_workers=4)
 criterion = MaximalCodingRateReduction(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
 optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)

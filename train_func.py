@@ -229,29 +229,21 @@ def get_features(net, trainloader, verbose=True):
     return torch.cat(features), torch.cat(labels)
     
 
-def corrupt_labels(trainset, ratio, seed):
-    """Corrupt labels in trainset.
-    
-    Parameters:
-        trainset (torch.data.dataset): trainset where labels is stored
-        ratio (float): ratio of labels to be corrupted. 0 to corrupt no labels; 
-                            1 to corrupt all labels
-        seed (int): random seed for reproducibility
-        
-    Returns:
-        trainset (torch.data.dataset): trainset with updated corrupted labels
-        
-    """
+def corrupt_labels(mode="default"):
+    """Returns higher corder function"""
+    if mode == "default":
+        from corrupt import default_corrupt
+        return default_corrupt
+    elif mode == "asymmetric_noise":
+        from corrupt import asymmetric_noise
+        return asymmetric_noise
+    elif mode == "noisify_pairflip":
+        from corrupt import noisify_pairflip
+        return noisify_pairflip
+    elif mode == "noisify_multiclass_symmetric":
+        from corrupt import noisify_multiclass_symmetric
+        return noisify_multiclass_symmetric
 
-    np.random.seed(seed)
-    train_labels = np.asarray(trainset.targets)
-    num_classes = np.max(train_labels) + 1
-    n_train = len(train_labels)
-    n_rand = int(len(trainset.data)*ratio)
-    randomize_indices = np.random.choice(range(n_train), size=n_rand, replace=False)
-    train_labels[randomize_indices] = np.random.choice(np.arange(num_classes), size=n_rand, replace=True)
-    trainset.targets = train_labels
-    return trainset
 
 
 def label_to_membership(targets, num_classes=None):
