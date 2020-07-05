@@ -127,7 +127,7 @@ if __name__ == '__main__':
     train_transforms = tf.load_transforms('test')
     trainset = tf.load_trainset(params['data'], train_transforms, train=True, path=args.data_dir)
     if 'lcr' in params.keys(): # supervised corruption case
-        trainset = tf.corrupt_labels(trainset, params['lcr'], params['lcs'])
+        trainset = tf.corrupt_labels(params['corrupt'])(trainset, params['lcr'], params['lcs'])
     new_labels = trainset.targets
     trainloader = DataLoader(trainset, batch_size=200)
     train_features, train_labels = tf.get_features(net, trainloader)

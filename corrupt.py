@@ -30,7 +30,7 @@ def default_corrupt(trainset, ratio, seed):
 def asymmetric_noise(trainset, ratio, seed):
     assert 0 <= ratio <= 1., 'ratio is bounded between 0 and 1' 
     np.random.seed(seed)
-    train_labels = trainset.targets.numpy().copy()
+    train_labels = np.array(trainset.targets)
     train_labels_gt = train_labels.copy()
     for i in range(trainset.num_classes):
         indices = np.where(train_labels == i)[0]
@@ -63,7 +63,7 @@ def noisify_pairflip(trainset, noise, seed=None):
     """mistakes:
         flip in the pair
     """
-    y_train = trainset.targets.numpy()
+    y_train = np.array(trainset.targets)
     nb_classes = np.unique(trainset.targets).size
     P = np.eye(nb_classes)
     n = noise
@@ -90,7 +90,7 @@ def noisify_multiclass_symmetric(trainset, noise, seed=10):
     """mistakes:
         flip in the symmetric way
     """
-    y_train = trainset.targets.numpy()
+    y_train = np.array(trainset.targets)
     nb_classes = np.unique(y_train).size
     P = np.ones((nb_classes, nb_classes))
     n = noise
