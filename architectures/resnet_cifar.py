@@ -137,5 +137,5 @@ class ResNetSelfSup(nn.Module):
 def ResNet18(feature_dim=512):
     return ResNet(BasicBlock, [2, 2, 2, 2], feature_dim)
 
-def ResNet18SelfSup(feature_dim=512):
+def ResNet18Control(feature_dim=512):
     return ResNetSelfSup(BasicBlock, [2, 2, 2, 2], feature_dim)

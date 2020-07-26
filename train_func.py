@@ -28,9 +28,9 @@ def load_architectures(name, dim):
     if _name == "resnet18":
         from architectures.resnet_cifar import ResNet18
         net = ResNet18(dim)
-    elif _name == "resnet18selfsup":
-        from architectures.resnet_cifar import ResNet18SelfSup
-        net = ResNet18SelfSup(dim)
+    elif _name == "resnet18ctrl":
+        from architectures.resnet_cifar import ResNet18Control
+        net = ResNet18Control(dim)
     elif _name == "resnet18stl":
         from architectures.resnet_stl import ResNet18STL
         net = ResNet18STL(dim)
