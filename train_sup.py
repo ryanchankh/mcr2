@@ -89,5 +89,6 @@ for epoch in range(args.epo):
         optimizer.step()
 
         utils.save_state(model_dir, epoch, step, loss.item(), *loss_empi, *loss_theo)
+    scheduler.step()
     utils.save_ckpt(model_dir, net, epoch)
 print("training complete.")
