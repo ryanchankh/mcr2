@@ -4,7 +4,8 @@ import os
 import numpy as np
 from torch.utils.data import DataLoader
 from augmentloader import AugmentLoader
-from torch.optim import SGD
+import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
 
 import train_func as tf
 from loss import MaximalCodingRateReduction
@@ -64,18 +65,6 @@ model_dir = os.path.join(args.save_dir,
 utils.init_pipeline(model_dir)
 utils.save_params(model_dir, vars(args))
 
-## per model functions
-def lr_schedule(epoch, optimizer):
-    """decrease the learning rate"""
-    lr = args.lr
-    if epoch >= 400:
-        lr = args.lr * 0.01
-    elif epoch >= 200:
-        lr = args.lr * 0.1
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-
-
 ## Prepare for Training
 if args.pretrain_dir is not None:
     net, _ = tf.load_checkpoint(args.pretrain_dir, args.pretrain_epo)
@@ -87,12 +76,11 @@ trainset = tf.load_trainset(args.data, transforms, path=args.data_dir)
 trainset = tf.corrupt_labels(args.corrupt)(trainset, args.lcr, args.lcs)
 trainloader = DataLoader(trainset, batch_size=args.bs, drop_last=True, num_workers=4)
 criterion = MaximalCodingRateReduction(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
-optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
-
+optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
+scheduler = lr_scheduler.MultiStepLR(optimizer, [200, 400], gamma=0.1)
 
 ## Training
 for epoch in range(args.epo):
-    lr_schedule(epoch, optimizer)
     for step, (batch_imgs, batch_lbls) in enumerate(trainloader):
         features = net(batch_imgs.cuda())
         loss, loss_empi, loss_theo = criterion(features, batch_lbls, num_classes=trainset.num_classes)
