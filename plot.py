@@ -225,8 +225,8 @@ def plot_pca(args, features, labels, epoch):
     ## plot features
     fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 5), dpi=500)
     x_min = np.min([len(sig_val) for sig_val in sig_vals])
-    ax.plot(np.arange(x_min), sig_vals[0][:x_min], '-p', markersize=3, markeredgecolor='black',
-        linewidth=1.5, color='tomato')
+    # ax.plot(np.arange(x_min), sig_vals[0][:x_min], '-p', markersize=3, markeredgecolor='black',
+    #     linewidth=1.5, color='tomato')
     map_vir = plt.cm.get_cmap('Blues', 6)
     norm = plt.Normalize(-10, 10)
     class_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -633,8 +633,6 @@ def plot_heatmap(args, features, labels, epoch):
 
     
     save_dir = os.path.join(args.model_dir, 'figures', 'heatmaps')
-    for i in range(500):
-        np.save(save_dir+f"/sim_mat/sim_mat{i}.npy", sim_mat[i*100:(i+1)*100])
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     file_name = os.path.join(save_dir, f"heatmat_epoch{epoch}.png")
@@ -692,7 +690,7 @@ if __name__ == "__main__":
         transforms = tf.load_transforms('test')
         trainset = tf.load_trainset(params['data'], transforms)
         if 'lcr' in params.keys(): # supervised corruption case
-            trainset = tf.corrupt_labels(trainset, params['lcr'], params['lcs'])
+            trainset = tf.corrupt_labels(params['corrupt'])(trainset, params['lcr'], params['lcs'])
         trainloader = DataLoader(trainset, batch_size=200, num_workers=4)
         features, labels = tf.get_features(net, trainloader)
 
