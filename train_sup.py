@@ -63,7 +63,6 @@ model_dir = os.path.join(args.save_dir,
                     args.arch, args.fd, args.data, args.epo, args.bs, args.lr, args.mom, 
                     args.wd, args.gam1, args.gam2, args.eps, args.lcr, args.tail))
 utils.init_pipeline(model_dir)
-utils.save_params(model_dir, vars(args))
 
 ## Prepare for Training
 if args.pretrain_dir is not None:
@@ -77,7 +76,8 @@ trainset = tf.corrupt_labels(args.corrupt)(trainset, args.lcr, args.lcs)
 trainloader = DataLoader(trainset, batch_size=args.bs, drop_last=True, num_workers=4)
 criterion = MaximalCodingRateReduction(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
 optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
-scheduler = lr_scheduler.MultiStepLR(optimizer, [200, 400], gamma=0.1)
+scheduler = lr_scheduler.MultiStepLR(optimizer, [200, 400, 600], gamma=0.1)
+utils.save_params(model_dir, vars(args))
 
 ## Training
 for epoch in range(args.epo):

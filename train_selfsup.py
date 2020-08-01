@@ -2,7 +2,9 @@ import argparse
 import os
 
 import numpy as np
-from torch.optim import SGD, Adam
+import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
+
 
 import train_func as tf
 from augmentloader import AugmentLoader
@@ -60,27 +62,6 @@ model_dir = os.path.join(args.save_dir,
                     args.lr, args.mom, args.wd, args.gam1, args.gam2, args.eps, args.tail))
 utils.init_pipeline(model_dir)
 
-
-## per model functions
-def lr_schedule(epoch, optimizer):
-    """decrease the learning rate"""
-    lr = list(iter(optimizer.param_groups))[0]['lr']
-    if epoch != 0 and epoch % 20 == 0:
-        lr = lr * 0.1
-        print(f'current learning rate: {lr}')
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-
-def lr_schedule2(epoch, optimizer):
-    """decrease the learning rate"""
-    lr = list(iter(optimizer.param_groups))[0]['lr']
-    if epoch != 0 and epoch % 30 == 0:
-        lr = lr * 0.1
-        print(f'current learning rate: {lr}')
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-
-
 ## Prepare for Training
 if args.pretrain_dir is not None:
     net, _ = tf.load_checkpoint(args.pretrain_dir, args.pretrain_epo)
@@ -95,14 +76,13 @@ trainloader = AugmentLoader(trainset,
                             batch_size=args.bs,
                             num_aug=args.aug)
 criterion = MaximalCodingRateReduction(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
-optimizer = SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
+optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
+scheduler = lr_scheduler.MultiStepLR(optimizer, [30, 60], gamma=0.1)
 utils.save_params(model_dir, vars(args))
 
 
 ## Training
 for epoch in range(args.epo):
-    lr_schedule(epoch, optimizer)
-    # lr_schedule2(epoch, optimizer)
     for step, (batch_imgs, _, batch_idx) in enumerate(trainloader):
         batch_features = net(batch_imgs.cuda())
         loss, loss_empi, loss_theo = criterion(batch_features, batch_idx)
@@ -113,5 +93,6 @@ for epoch in range(args.epo):
         utils.save_state(model_dir, epoch, step, loss.item(), *loss_empi, *loss_theo)
         if step % 20 == 0:
             utils.save_ckpt(model_dir, net, epoch)
+    scheduler.step()
     utils.save_ckpt(model_dir, net, epoch)
 print("training complete.")
