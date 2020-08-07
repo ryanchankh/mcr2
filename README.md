@@ -137,8 +137,8 @@ $ python3 train_sup.py --arch resnet18 --data cifar10 --fd 128 --epo 500 --bs 10
 
 #### Commands for Self-supervised Learning Setting
 ```
-$ python3 train_selfsup.py --arch resnet18selfsup --data cifar10 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform cifar
-$ python3 train_selfsup.py --arch resnet18selfsup --data cifar100 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform cifar
+$ python3 train_selfsup.py --arch resnet18ctrl --data cifar10 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform cifar
+$ python3 train_selfsup.py --arch resnet18ctrl --data cifar100 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform cifar
 $ python3 train_selfsup.py --arch resnet18stl --data stl10 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform stl10
 ```
 
