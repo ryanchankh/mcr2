@@ -102,9 +102,9 @@ class ResNet(nn.Module):
         return F.normalize(out)
 
 
-class ResNetSelfSup(nn.Module):
+class ResNetControl(nn.Module):
     def __init__(self, block, num_blocks, feature_dim=512):
-        super(ResNetSelfSup, self).__init__()
+        super(ResNetControl, self).__init__()
         self.in_planes = 64
         self.feature_dim = feature_dim
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1,
@@ -138,4 +138,4 @@ def ResNet18(feature_dim=512):
     return ResNet(BasicBlock, [2, 2, 2, 2], feature_dim)
 
 def ResNet18Control(feature_dim=512):
-    return ResNetSelfSup(BasicBlock, [2, 2, 2, 2], feature_dim)
+    return ResNetControl(BasicBlock, [2, 2, 2, 2], feature_dim)
