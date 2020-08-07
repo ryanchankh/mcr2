@@ -20,12 +20,12 @@ parser.add_argument('--fd', type=int, default=128,
                     help='dimension of feature dimension (default: 128)')
 parser.add_argument('--data', type=str, default='cifar10',
                     help='dataset for training (default: CIFAR10)')
-parser.add_argument('--epo', type=int, default=500,
-                    help='number of epochs for training (default: 500)')
+parser.add_argument('--epo', type=int, default=800,
+                    help='number of epochs for training (default: 800)')
 parser.add_argument('--bs', type=int, default=1000,
                     help='input batch size for training (default: 1000)')
-parser.add_argument('--lr', type=float, default=0.0001,
-                    help='learning rate (default: 0.0001)')
+parser.add_argument('--lr', type=float, default=0.001,
+                    help='learning rate (default: 0.001)')
 parser.add_argument('--mom', type=float, default=0.9,
                     help='momentum (default: 0.9)')
 parser.add_argument('--wd', type=float, default=5e-4,
@@ -74,6 +74,7 @@ transforms = tf.load_transforms(args.transform)
 trainset = tf.load_trainset(args.data, transforms, path=args.data_dir)
 trainset = tf.corrupt_labels(args.corrupt)(trainset, args.lcr, args.lcs)
 trainloader = DataLoader(trainset, batch_size=args.bs, drop_last=True, num_workers=4)
+
 criterion = MaximalCodingRateReduction(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
 optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
 scheduler = lr_scheduler.MultiStepLR(optimizer, [200, 400, 600], gamma=0.1)

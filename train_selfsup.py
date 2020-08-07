@@ -75,11 +75,11 @@ trainloader = AugmentLoader(trainset,
                             sampler=args.sampler,
                             batch_size=args.bs,
                             num_aug=args.aug)
+
 criterion = MaximalCodingRateReduction(gam1=args.gam1, gam2=args.gam2, eps=args.eps)
 optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.mom, weight_decay=args.wd)
 scheduler = lr_scheduler.MultiStepLR(optimizer, [30, 60], gamma=0.1)
 utils.save_params(model_dir, vars(args))
-
 
 ## Training
 for epoch in range(args.epo):
