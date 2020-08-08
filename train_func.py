@@ -273,9 +273,12 @@ def membership_to_label(membership):
         labels[i] = np.argmax(membership[:, i, i])
     return labels
 
-def one_hot(x, K):
-    """Turn labels x into one hot vector of K classes. """
-    return np.array(x[:, None] == np.arange(K)[None, :], dtype=int)
+def one_hot(labels_int, n_classes):
+    """Turn labels into one hot vector of K classes. """
+    labels_onehot = torch.zeros(size=(len(labels_int), n_classes)).float()
+    for i, y in enumerate(labels_int):
+        labels_onehot[i, y] = 1.
+    return labels_onehot
 
 
 ## Additional Augmentations
