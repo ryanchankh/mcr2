@@ -76,7 +76,7 @@ def nearsub(args, train_features, train_labels, test_features, test_labels):
     print('SVD: {}'.format(acc_svd))
     return acc_svd
 
-def kmeans(args, train_features, train_labels, test_features, test_labels):
+def kmeans(args, train_features, train_labels):
     """Perform KMeans clustering. 
     
     Options:
@@ -85,7 +85,7 @@ def kmeans(args, train_features, train_labels, test_features, test_labels):
     """
     return cluster.kmeans(args, train_features, train_labels)
 
-def ensc(args, train_features, train_labels, test_features, test_labels):
+def ensc(args, train_features, train_labels):
     """Perform Elastic Net Subspace Clustering.
     
     Options:
