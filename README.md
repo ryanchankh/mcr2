@@ -1,5 +1,5 @@
 # Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction
-This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](https://arxiv.org/abs/2006.08558) (2020).
+This repository is the official implementation of the [NeurIPS'20 paper](https://arxiv.org/abs/2006.08558) "Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction".
 
 ## Requirements
 - This codebase is written for `python3`.
@@ -150,11 +150,12 @@ $ python3 train_selfsup.py --arch resnet18stl --data stl10 --fd 128 --epo 100 --
 ## Reference
 For technical details and full experimental results, please check [the paper](https://arxiv.org/abs/2006.08558).
 ```
-@article{yu2020learning, 
-	author = {Yu, Yaodong and Chan, Kwan Ho Ryan and You, Chong and Song, Chaobing and Ma, Yi}, 
-	title = {Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction}, 
-	journal = {arXiv preprint arXiv:2006.08558},
-	year = {2020}
+@article{yu2020learning,
+  title={Learning diverse and discriminative representations via the principle of maximal coding rate reduction},
+  author={Yu, Yaodong and Chan, Kwan Ho Ryan and You, Chong and Song, Chaobing and Ma, Yi},
+  journal={Advances in Neural Information Processing Systems},
+  volume={33},
+  year={2020}
 }
 ```
 
