@@ -1,5 +1,5 @@
 # Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction
-This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](https://arxiv.org/abs/2006.08558) (2020) by [Yaodong Yu](https://yaodongyu.github.io/)* (UC Berkeley), [Kwan Ho Ryan Chan](ryanchankh.github.io) (UC Berkeley), [Chong You](https://sites.google.com/view/cyou) (UC Berkeley), Chaobing Song (UC Berkeley) and Yi Ma (UC Berkeley).
+This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](https://arxiv.org/abs/2006.08558) (2020) by [Yaodong Yu](https://yaodongyu.github.io/)* (UC Berkeley), [Kwan Ho Ryan Chan](ryanchankh.github.io)* (UC Berkeley), [Chong You](https://sites.google.com/view/cyou) (UC Berkeley), Chaobing Song (UC Berkeley) and Yi Ma (UC Berkeley).
 
 ## What is Maxmial Coding Rate Reduction? 
 Our goal is to learn a mapping that maps the high-dimensional data that lies in a low-dimensional manifold to low-dimensional subspaces with the following three properties: 
@@ -18,7 +18,6 @@ To achieve this, we propose an objective function called **Maximal Coding Rate R
 
 =======
 This repository is the official implementation of the [NeurIPS'20 paper](https://arxiv.org/abs/2006.08558) "Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction".
->>>>>>> aca9d664a1fad5136eaff9fddd57a5d1a94e212a
 
 ## Requirements
 - This codebase is written for `python3`.
