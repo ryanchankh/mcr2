@@ -16,6 +16,9 @@ Our goal is to learn a mapping that maps the high-dimensional data that lies in 
 To achieve this, we propose an objective function called **Maximal Coding Rate Reduction** (MCR<sup>2</sup>). In our paper, we provide not only theoretical guarantees to the desired properties upon convergence, but also practical properties such as robustness to label corruption and empirical results such as state-of-the-art unsupervised clustering performance. For more details on algorithm design, please refer to our paper.
 
 
+=======
+This repository is the official implementation of the [NeurIPS'20 paper](https://arxiv.org/abs/2006.08558) "Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction".
+>>>>>>> aca9d664a1fad5136eaff9fddd57a5d1a94e212a
 
 ## Requirements
 - This codebase is written for `python3`.
