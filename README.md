@@ -1,5 +1,5 @@
 # Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction
-This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](https://arxiv.org/abs/2006.08558) (2020).
+This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](https://arxiv.org/abs/2006.08558) (2020) by [Yaodong Yu](https://yaodongyu.github.io/)* (UC Berkeley), [Kwan Ho Ryan Chan](ryanchankh.github.io) (UC Berkeley), [Chong You](https://sites.google.com/view/cyou) (UC Berkeley), Chaobing Song (UC Berkeley) and Yi Ma (UC Berkeley).
 
 ## What is Maxmial Coding Rate Reduction? 
 Our goal is to learn a mapping that maps the high-dimensional data that lies in a low-dimensional manifold to low-dimensional subspaces with the following three properties: 
@@ -158,21 +158,23 @@ $ python3 train_selfsup.py --arch resnet18ctrl --data cifar100 --fd 128 --epo 10
 $ python3 train_selfsup.py --arch resnet18stl --data stl10 --fd 128 --epo 100 --bs 1000 --eps 0.5 --gam1 20 --gam2 0.05 --lr 0.1 --aug 50 --transform stl10
 ```
 
+## Reference
+For technical details and full experimental results, please check [the paper](https://arxiv.org/abs/2006.08558). If you have used our work in your own, please consider citing: 
+
+```
+@article{yu2020learning,
+  title={Learning diverse and discriminative representations via the principle of maximal coding rate reduction},
+  author={Yu, Yaodong and Chan, Kwan Ho Ryan and You, Chong and Song, Chaobing and Ma, Yi},
+  journal={Advances in Neural Information Processing Systems},
+  volume={33},
+  year={2020}
+}
+
+```
 
 ## License and Contributing
 - This README is formatted based on [paperswithcode](https://github.com/paperswithcode/releasing-research-code).
 - Feel free to post issues via Github. 
 
-## Reference
-For technical details and full experimental results, please check [the paper](https://arxiv.org/abs/2006.08558).
-```
-@article{yu2020learning, 
-	author = {Yu, Yaodong and Chan, Kwan Ho Ryan and You, Chong and Song, Chaobing and Ma, Yi}, 
-	title = {Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction}, 
-	journal = {arXiv preprint arXiv:2006.08558},
-	year = {2020}
-}
-```
-
 ## Contact
-Please contact ryanchankh@berkeley.edu and yyu@eecs.berkeley.edu if you have any question on the codes.
+Please contact [ryanchankh@berkeley.edu](ryanchankh@berkeley.edu) and [yyu@eecs.berkeley.edu](yyu@eecs.berkeley.edu) if you have any question on the codes.
