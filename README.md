@@ -1,6 +1,22 @@
 # Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction
 This repository is the official implementation of [Learning Diverse and Discriminative Representations via the Principle of Maximal Coding Rate Reduction](https://arxiv.org/abs/2006.08558) (2020).
 
+## What is Maxmial Coding Rate Reduction? 
+Our goal is to learn a mapping that maps the high-dimensional data that lies in a low-dimensional manifold to low-dimensional subspaces with the following three properties: 
+
+<p align="center">
+    <img src="images/teaser.png" width="350"\><br>
+</p>
+<p align="center">
+
+1. _Between-Class Discriminative_: Features of samples from different classes/clusters should be highly uncorrelatedand belong to different low-dimensional linear subspaces
+2. _Within-Class Compressible_: Features of samples from the same class/cluster should be relatively correlated in a sense that they belong to a low-dimensional linear subspace
+3. _Maximally Diverse Representation_: Dimension (or variance) of features for each class/clustershould beas large as possibleas long as they stay uncorrelated from the other classes
+
+To achieve this, we propose an objective function called **Maximal Coding Rate Reduction** (MCR<sup>2</sup>). In our paper, we provide not only theoretical guarantees to the desired properties upon convergence, but also practical properties such as robustness to label corruption and empirical results such as state-of-the-art unsupervised clustering performance. For more details on algorithm design, please refer to our paper.
+
+
+
 ## Requirements
 - This codebase is written for `python3`.
 - To install necessary python packages, run `pip install -r requirements.txt`.
@@ -143,7 +159,7 @@ $ python3 train_selfsup.py --arch resnet18stl --data stl10 --fd 128 --epo 100 --
 ```
 
 
-## Lisence and Contributing
+## License and Contributing
 - This README is formatted based on [paperswithcode](https://github.com/paperswithcode/releasing-research-code).
 - Feel free to post issues via Github. 
 
