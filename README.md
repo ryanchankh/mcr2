@@ -16,8 +16,8 @@ Our goal is to learn a mapping that maps the high-dimensional data that lies in 
 To achieve this, we propose an objective function called **Maximal Coding Rate Reduction** (MCR<sup>2</sup>). In our paper, we provide not only theoretical guarantees to the desired properties upon convergence, but also practical properties such as robustness to label corruption and empirical results such as state-of-the-art unsupervised clustering performance. For more details on algorithm design, please refer to our paper.
 
 ## Requirements
-- This codebase is written for `python3`.
-- To install necessary python packages, run `pip install -r requirements.txt`.
+- This codebase is written for `python3` with `anaconda`.
+- To install necessary Python packages, run `conda env create -f environment.yml` and `conda activate MCR`.
 
 
 ## Training
