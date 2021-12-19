@@ -9,7 +9,7 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-from cluster import ElasticNetSubspaceClustering, clustering_accuracy
+from cluster import ElasticNetSubspaceClustering
 import utils
 
 
