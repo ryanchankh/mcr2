@@ -97,9 +97,9 @@ def compute_accuracy(y_pred, y_true):
 
 def clustering_accuracy(labels_true, labels_pred):
     """Compute clustering accuracy."""
-    from sklearn.metrics.cluster import supervised
+    from sklearn.metrics.cluster import _supervised
     from scipy.optimize import linear_sum_assignment
-    labels_true, labels_pred = supervised.check_clusterings(labels_true, labels_pred)
-    value = supervised.contingency_matrix(labels_true, labels_pred)
+    labels_true, labels_pred = _supervised.check_clusterings(labels_true, labels_pred)
+    value = _supervised.contingency_matrix(labels_true, labels_pred)
     [r, c] = linear_sum_assignment(-value)
     return value[r, c].sum() / len(labels_true)
