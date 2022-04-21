@@ -9,7 +9,7 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-from cluster import ElasticNetSubspaceClustering, clustering_accuracy
+from cluster import ElasticNetSubspaceClustering
 import utils
 
 
@@ -139,6 +139,15 @@ def load_transforms(name):
             transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
             transforms.ToTensor()])
+    elif _name == "cifar_norm":
+        transform = transforms.Compose([
+            transforms.RandomResizedCrop(32),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+            transforms.RandomGrayscale(p=0.2),
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+        ])
     elif _name == "mnist":
          transform = transforms.Compose([
             transforms.RandomChoice([

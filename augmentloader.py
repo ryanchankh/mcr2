@@ -61,9 +61,9 @@ class AugmentLoader:
             num_img = self.batch_size // self.num_aug
             return _Iter(self, sampler, num_img, self.num_aug)
         elif self.sampler == "random":
-            size = len(self.dataset.targets) // self.batch_size * self.batch_size
-            sampler = RandomSampler(self.dataset, size, shuffle=self.shuffle)
             num_img = self.batch_size // self.num_aug
+            size = len(self.dataset.targets) // num_img * num_img
+            sampler = RandomSampler(self.dataset, size, shuffle=self.shuffle)
             return _Iter(self, sampler, num_img, self.num_aug)
         else:
             raise NameError(f"sampler {self.sampler} not found.")
