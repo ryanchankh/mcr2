@@ -6,7 +6,7 @@ matplotlib==3.2.1
 mkl-fft==1.0.15
 mkl-random==1.1.0
 mkl-service==2.3.0
-numpy==1.18.4
+numpy==1.22.0
 olefile==0.46
 opencv-python==4.2.0.34
 pandas==1.0.3
