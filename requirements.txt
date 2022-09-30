@@ -1,6 +1,6 @@
 certifi==2020.4.5.1
 cycler==0.10.0
-joblib==0.15.1
+joblib==1.2.0
 kiwisolver==1.2.0
 matplotlib==3.2.1
 mkl-fft==1.0.15
